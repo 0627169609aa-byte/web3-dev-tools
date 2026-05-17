@@ -1,27 +1,35 @@
-local json = require('json')
+-- Utility functions for network operations
 
-local ConfigLoader = {}
+local http = require('socket.http')
 
--- Default configuration settings
-local defaultConfig = {
-    gameName = 'My Game',
-    maxPlayers = 4,
-    adminEmail = 'admin@example.com',
-    graphicsQuality = 'high',
-    enableVoiceChat = false
-}
-
--- Function to load configuration from a file
-function ConfigLoader.loadConfig(filePath)
-    local file = io.open(filePath, 'r')
-    local config = {}
-    if file then
-        local content = file:read('*a')
-        config = json.decode(content) or {}
-        file:close()
-    end
-    -- Merge default settings with loaded config
-    return setmetatable(config, { __index = defaultConfig })
+local function is_success(status)
+    return status == 200
 end
 
-return ConfigLoader
+local function retry_request(url, attempts, delay)
+    local response
+    local status
+    attempts = attempts or 3  -- Default to 3 attempts
+    delay = delay or 2        -- Default to 2 seconds delay
+
+    for i = 1, attempts do
+        response, status = http.request(url)
+        if is_success(status) then
+            return response
+        else
+            print(string.format('Attempt %d/%d failed. Status: %d. Retrying in %d seconds...', i, attempts, status, delay))
+            os.execute('sleep ' .. delay)
+        end
+    end
+
+    error('Failed to retrieve data after ' .. attempts .. ' attempts.')
+end
+
+-- Function to fetch game data from server
+function fetch_game_data(api_url)
+    return retry_request(api_url, 5, 3)  -- 5 attempts, 3 seconds delay
+end
+
+return {
+    fetch_game_data = fetch_game_data,
+}

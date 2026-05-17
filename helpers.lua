@@ -1,36 +1,37 @@
--- Utility functions for gaming data handling
-
-local M = {}
-
--- Function to calculate average score from a table of scores
--- @param scores: table   A table containing individual scores
--- @return: number       The average score
-function M.calculate_average_score(scores)
-    if #scores == 0 then
-        return 0
+-- Retry function for network operations
+local function retry(fn, retries, delay)
+    local attempts = 0
+    while attempts < retries do
+        local success, result = pcall(fn)
+        if success then
+            return result
+        end
+        attempts = attempts + 1
+        if attempts < retries then
+            os.execute("sleep " .. delay)
+        end
     end
-    local total = 0
-    for _, score in ipairs(scores) do
-        total = total + score
+    error("Maximum retries reached")
+end
+
+-- Example of a network operation using retry logic
+local function fetchData(url)
+    -- Simulate a network request
+    local response = httpRequest(url)  -- Assuming httpRequest is a defined function
+    return response
+end
+
+local function httpRequest(url)
+    -- Simulate possible failure
+decision = math.random(1, 3)
+    if decision == 1 then
+        return "Data retrieved successfully from " .. url
+    else
+        error("Network error")
     end
-    return total / #scores
 end
 
--- Function to check if a player has reached a specific level
--- @param player_level: number   Current level of the player
--- @param target_level: number    Level to check against
--- @return: boolean              True if player reached or exceeded target level
-function M.has_reached_level(player_level, target_level)
-    return player_level >= target_level
-end
-
--- Function to format player statistics as a string
--- @param player_name: string    Name of the player
--- @param score: number          Player's score
--- @param level: number          Player's current level
--- @return: string              Formatted string of player stats
-function M.format_player_stats(player_name, score, level)
-    return string.format("Player: %s | Score: %d | Level: %d", player_name, score, level)
-end
-
-return M
+-- Usage
+local url = "https://api.example.com/data"
+local result = retry(function() return fetchData(url) end, 3, 2)
+print(result)

@@ -1,34 +1,45 @@
--- Initialize Lua for web3 gaming tools
+-- Logger setup with rotation
 
-local function loadGameAssets()
-    -- Load game assets such as images and sounds
-    local assets = {}
-    assets.player = love.graphics.newImage('assets/player.png')
-    assets.background = love.graphics.newImage('assets/background.png')
-    return assets
+local log = require('log')
+local lfs = require('lfs')
+local rotation_interval = 24 * 60 * 60 -- Rotate every 24 hours
+local log_file = 'game_log.txt'
+local max_log_size = 5 * 1024 * 1024 -- 5 MB
+
+-- Function to check and rotate log files
+local function rotate_log()
+    local log_size = lfs.attributes(log_file, 'size')
+    if log_size and log_size > max_log_size then
+        local timestamp = os.date('%Y%m%d_%H%M%S')
+        local new_log_file = string.format('game_log_%s.txt', timestamp)
+        os.rename(log_file, new_log_file)
+    end
 end
 
-local function initializeGame()
-    -- Set up initial game variables
-    local gameState = { score = 0, level = 1 }
-    local assets = loadGameAssets()
-    return gameState, assets
+-- Logger function
+local function logger(message)
+    rotate_log()
+    local log_entry = string.format('%s - %s\n', os.date('%Y-%m-%d %H:%M:%S'), message)
+    local file = io.open(log_file, 'a')
+    if file then
+        file:write(log_entry)
+        file:close()
+    else
+        print('Failed to open log file')
+    end
 end
 
-function love.load()
-    -- Main entry point for the game
-    gameState, assets = initializeGame()
+-- Set up timed rotation check
+local function start_rotation_timer()
+    while true do
+        logger('Checking log rotation')
+        rotate_log()
+        os.execute('sleep ' .. rotation_interval)
+    end
 end
 
-function love.update(dt)
-    -- Update game logic each frame
-    -- For simplicity, we simulate score increase
-    gameState.score = gameState.score + dt * 10
-end
+-- Start the logger
+logger('Logger initialized')
+start_rotation_timer()
 
-function love.draw()
-    -- Draw the game onto the screen
-    love.graphics.draw(assets.background, 0, 0)
-    love.graphics.draw(assets.player, 100, 100)
-    love.graphics.print('Score: ' .. math.floor(gameState.score), 10, 10)
-end
+return { log = logger }

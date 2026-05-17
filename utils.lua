@@ -1,35 +1,32 @@
--- Utility functions for network operations
+-- Logger setup with rotation in Lua
 
-local http = require('socket.http')
+local logging = require('logging')
+local logging_file = require('logging.file')
+local lfs = require('lfs')
 
-local function is_success(status)
-    return status == 200
-end
+local Logger = {}
 
-local function retry_request(url, attempts, delay)
-    local response
-    local status
-    attempts = attempts or 3  -- Default to 3 attempts
-    delay = delay or 2        -- Default to 2 seconds delay
-
-    for i = 1, attempts do
-        response, status = http.request(url)
-        if is_success(status) then
-            return response
-        else
-            print(string.format('Attempt %d/%d failed. Status: %d. Retrying in %d seconds...', i, attempts, status, delay))
-            os.execute('sleep ' .. delay)
-        end
+-- Function to create the directory if it doesn't exist
+local function create_log_directory(directory)
+    if not lfs.attributes(directory) then
+        lfs.mkdir(directory)
     end
-
-    error('Failed to retrieve data after ' .. attempts .. ' attempts.')
 end
 
--- Function to fetch game data from server
-function fetch_game_data(api_url)
-    return retry_request(api_url, 5, 3)  -- 5 attempts, 3 seconds delay
+-- Function to setup the logger with rotation
+function Logger.setup(name, log_dir, max_size, backups)
+    create_log_directory(log_dir)
+    local log_file = logging_file(log_dir .. '/' .. name)
+    log_file:setRotationSize(max_size or 1048576)  -- Default 1MB
+    log_file:setBackupCount(backups or 5)  -- Default 5 backups
+    return log_file
 end
 
-return {
-    fetch_game_data = fetch_game_data,
-}
+-- Function to log messages
+function Logger.log(logger, level, message)
+    if logger then
+        logger[level](logger, message)
+    end
+end
+
+return Logger

@@ -1,37 +1,40 @@
--- Retry function for network operations
-local function retry(fn, retries, delay)
-    local attempts = 0
-    while attempts < retries do
-        local success, result = pcall(fn)
-        if success then
-            return result
-        end
-        attempts = attempts + 1
-        if attempts < retries then
-            os.execute("sleep " .. delay)
-        end
+--[[
+    helpers.lua
+    A module for input validation functions in a web3 gaming context.
+]]--
+
+local M = {}
+
+-- Function to validate a string input
+function M.validateString(input)
+    return type(input) == 'string' and #input > 0
+end
+
+-- Function to validate a number input
+function M.validateNumber(input)
+    return type(input) == 'number' and input > 0
+end
+
+-- Function to validate an array input
+function M.validateArray(input)
+    return type(input) == 'table' and #input > 0
+end
+
+-- Main processing loop example
+function M.processInput(input)
+    if not M.validateString(input.name) then
+        return { success = false, message = 'Invalid name provided' }
     end
-    error("Maximum retries reached")
-end
 
--- Example of a network operation using retry logic
-local function fetchData(url)
-    -- Simulate a network request
-    local response = httpRequest(url)  -- Assuming httpRequest is a defined function
-    return response
-end
-
-local function httpRequest(url)
-    -- Simulate possible failure
-decision = math.random(1, 3)
-    if decision == 1 then
-        return "Data retrieved successfully from " .. url
-    else
-        error("Network error")
+    if not M.validateNumber(input.age) then
+        return { success = false, message = 'Invalid age provided' }
     end
+
+    if not M.validateArray(input.items) then
+        return { success = false, message = 'Invalid items array' }
+    end
+
+    return { success = true, message = 'Input is valid' }
 end
 
--- Usage
-local url = "https://api.example.com/data"
-local result = retry(function() return fetchData(url) end, 3, 2)
-print(result)
+return M

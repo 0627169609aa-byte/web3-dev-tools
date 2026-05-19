@@ -1,40 +1,42 @@
---[[
-    helpers.lua
-    A module for input validation functions in a web3 gaming context.
-]]--
+-- Helper functions for common operations
 
-local M = {}
+local helpers = {}
 
--- Function to validate a string input
-function M.validateString(input)
-    return type(input) == 'string' and #input > 0
-end
-
--- Function to validate a number input
-function M.validateNumber(input)
-    return type(input) == 'number' and input > 0
-end
-
--- Function to validate an array input
-function M.validateArray(input)
-    return type(input) == 'table' and #input > 0
-end
-
--- Main processing loop example
-function M.processInput(input)
-    if not M.validateString(input.name) then
-        return { success = false, message = 'Invalid name provided' }
+--- Function to create a deep copy of a table
+-- @param orig The original table to copy
+-- @return A new table that is a deep copy of orig
+function helpers.deepCopy(orig)
+    if type(orig) ~= 'table' then return orig end
+    local copy = {}
+    for k, v in pairs(orig) do
+        copy[k] = helpers.deepCopy(v)
     end
-
-    if not M.validateNumber(input.age) then
-        return { success = false, message = 'Invalid age provided' }
-    end
-
-    if not M.validateArray(input.items) then
-        return { success = false, message = 'Invalid items array' }
-    end
-
-    return { success = true, message = 'Input is valid' }
+    return copy
 end
 
-return M
+--- Function to check if a table contains a specific value
+-- @param tbl The table to check
+-- @param value The value to search for
+-- @return True if value is found, false otherwise
+function helpers.tableContains(tbl, value)
+    for _, v in ipairs(tbl) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
+--- Function to merge two tables
+-- @param tbl1 The first table
+-- @param tbl2 The second table
+-- @return A new table containing the merged results
+function helpers.mergeTables(tbl1, tbl2)
+    local merged = helpers.deepCopy(tbl1)
+    for k, v in pairs(tbl2) do
+        merged[k] = v
+    end
+    return merged
+end
+
+return helpers

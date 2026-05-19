@@ -1,42 +1,40 @@
--- Helper functions for common operations
+-- Utility functions for error handling in gaming
 
-local helpers = {}
+local M = {}
 
---- Function to create a deep copy of a table
--- @param orig The original table to copy
--- @return A new table that is a deep copy of orig
-function helpers.deepCopy(orig)
-    if type(orig) ~= 'table' then return orig end
-    local copy = {}
-    for k, v in pairs(orig) do
-        copy[k] = helpers.deepCopy(v)
+--- Checks if a value is nil and returns an error message
+-- @param value The value to check
+-- @param msg The custom error message
+-- @return The original value or an error
+function M.checkNil(value, msg)
+    if value == nil then
+        error(msg or 'Value cannot be nil')
     end
-    return copy
+    return value
 end
 
---- Function to check if a table contains a specific value
--- @param tbl The table to check
--- @param value The value to search for
--- @return True if value is found, false otherwise
-function helpers.tableContains(tbl, value)
-    for _, v in ipairs(tbl) do
-        if v == value then
-            return true
-        end
+--- Safely attempts to execute a function and catches errors
+-- @param func The function to execute
+-- @return success status and result or error message
+function M.safeExecute(func)
+    local success, result = pcall(func)
+    if not success then
+        return false, 'Error: ' .. result
     end
-    return false
+    return true, result
 end
 
---- Function to merge two tables
--- @param tbl1 The first table
--- @param tbl2 The second table
--- @return A new table containing the merged results
-function helpers.mergeTables(tbl1, tbl2)
-    local merged = helpers.deepCopy(tbl1)
-    for k, v in pairs(tbl2) do
-        merged[k] = v
+--- Validates a number against a range
+-- @param num The number to validate
+-- @param min The minimum acceptable value
+-- @param max The maximum acceptable value
+-- @return The original number or an error message
+function M.validateNumberRange(num, min, max)
+    M.checkNil(num, 'Number must not be nil')
+    if num < min or num > max then
+        error(string.format('Number %d is out of range (%d - %d)', num, min, max))
     end
-    return merged
+    return num
 end
 
-return helpers
+return M

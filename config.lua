@@ -1,48 +1,41 @@
--- Logger configuration for web3-dev-tools
+-- Configuration loader with defaults
 
-local lfs = require('lfs')
+local Config = {}
 
-local Logger = {}  
-Logger.__index = Logger
+-- Default configuration
+local defaultConfig = {
+    gameTitle = 'Untitled Game',
+    maxPlayers = 4,
+    gameMode = 'sandbox',
+    difficulty = 'normal',
+    serverPort = 8080,
+    databaseHost = 'localhost',
+    databasePort = 3306,
+    enableLogging = true
+}
 
--- Initialize the logger with filename and rotation settings
-function Logger:new(filename, maxSize)
-    local obj = {}
-    setmetatable(obj, self)
-    self.filename = filename or 'app.log'
-    self.maxSize = maxSize or 1048576  -- Default to 1 MB
-    self.currentFileSize = 0
-    return obj
-end
-
--- Check the file size and rotate if necessary
-function Logger:checkRotation()
-    local file = io.open(self.filename, 'r')
-    if file then
-        file:seek('end')
-        self.currentFileSize = file:tell()
-        file:close()
+-- Function to load configuration from a file
+function Config.load(filePath)
+    local configFile = io.open(filePath, 'r')
+    if not configFile then
+        return defaultConfig -- Return defaults if file not found
     end
-    if self.currentFileSize >= self.maxSize then
-        self:rotate()
+    local configContent = configFile:read('*all')
+    configFile:close()
+    local config = load('return ' .. configContent)
+    setmetatable(config, {__index = defaultConfig}) -- Use defaults for missing values
+    return config
+end
+
+-- Function to save configuration to a file
+function Config.save(filePath, config)
+    local configFile = io.open(filePath, 'w')
+    if not configFile then
+        error('Could not open config file for writing: ' .. filePath)
     end
+    local configString = 'return ' .. table.tostring(config)
+    configFile:write(configString)
+    configFile:close()
 end
 
--- Rotate the log file
-function Logger:rotate()
-    local oldFileName = self.filename .. '.' .. os.date('%Y%m%d%H%M%S')
-    os.rename(self.filename, oldFileName)
-    self.currentFileSize = 0
-end
-
--- Log a message to the file
-function Logger:log(message)
-    self:checkRotation()
-    local file = io.open(self.filename, 'a')
-    if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        file:close()
-    end
-end
-
-return Logger
+return Config

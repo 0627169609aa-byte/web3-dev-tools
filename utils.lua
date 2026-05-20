@@ -1,22 +1,43 @@
--- Utility function to perform a network request with retry logic
+-- Utility functions for gaming data handling
 
-local http = require('socket.http')
+local Utils = {}
 
-local function performRequest(url, retries, delay)
-    local attempts = 0
-    while attempts < retries do
-        local response, status = http.request(url)
-        if status == 200 then
-            return response
-        else
-            attempts = attempts + 1
-            print('Attempt ' .. attempts .. ' failed: ' .. status .. '. Retrying in ' .. delay .. ' seconds...')
-            os.execute('sleep ' .. delay)
-        end
+--- Splits a string by a given delimiter
+-- @param str The input string
+-- @param delimiter The character to split on
+-- @return table A table of split strings
+function Utils.splitString(str, delimiter)
+    local result = {}
+    for match in (str..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match)
     end
-    error('Failed to perform request after ' .. attempts .. ' attempts.')
+    return result
 end
 
-return {
-    performRequest = performRequest
-}
+--- Calculates the average value of a table
+-- @param values A table of numbers
+-- @return number The average value
+function Utils.calculateAverage(values)
+    local sum = 0
+    for _, value in ipairs(values) do
+        sum = sum + value
+    end
+    return #values > 0 and (sum / #values) or 0
+end
+
+--- Merges two tables into one
+-- @param t1 The first table
+-- @param t2 The second table
+-- @return table A new table that combines both
+function Utils.mergeTables(t1, t2)
+    local merged = {}
+    for k, v in pairs(t1) do
+        merged[k] = v
+    end
+    for k, v in pairs(t2) do
+        merged[k] = v
+    end
+    return merged
+end
+
+return Utils

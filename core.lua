@@ -1,37 +1,26 @@
--- Utility function to handle gaming data
-
-local GameDataUtils = {}
-
--- Function to calculate total score from a list of scores
--- @param scores: a table containing individual scores
--- @return total score as a number
-function GameDataUtils.calculateTotalScore(scores)
-    local total = 0
-    for _, score in ipairs(scores) do
-        total = total + score
+-- Main game loop for processing player actions
+local function validateInput(input)
+    if type(input) ~= "string" or #input == 0 then
+        return false, "Input must be a non-empty string."
     end
-    return total
+    return true, nil
 end
 
--- Function to find the highest score
--- @param scores: a table containing individual scores
--- @return highest score as a number
-function GameDataUtils.findHighestScore(scores)
-    local highest = scores[1] or 0
-    for _, score in ipairs(scores) do
-        if score > highest then
-            highest = score
-        end
+local function processPlayerAction(action)
+    local isValid, errMsg = validateInput(action)
+    if not isValid then
+        print(errMsg)
+        return
     end
-    return highest
+    -- Process the valid action here
+    print("Processing action: ", action)
 end
 
--- Function to average scores
--- @param scores: a table containing individual scores
--- @return average score as a number
-function GameDataUtils.calculateAverageScore(scores)
-    local total = GameDataUtils.calculateTotalScore(scores)
-    return total / #scores
+local function mainLoop()
+    while true do
+        local playerInput = io.read()  -- Read input from the player
+        processPlayerAction(playerInput)
+    end
 end
 
-return GameDataUtils
+mainLoop()

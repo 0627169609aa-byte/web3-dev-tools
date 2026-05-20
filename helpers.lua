@@ -1,40 +1,32 @@
--- Utility functions for error handling in gaming
-
-local M = {}
-
---- Checks if a value is nil and returns an error message
--- @param value The value to check
--- @param msg The custom error message
--- @return The original value or an error
-function M.checkNil(value, msg)
-    if value == nil then
-        error(msg or 'Value cannot be nil')
-    end
-    return value
+-- Utility function to convert wei to ether
+local function weiToEther(wei)
+    return wei / 10^18
 end
 
---- Safely attempts to execute a function and catches errors
--- @param func The function to execute
--- @return success status and result or error message
-function M.safeExecute(func)
-    local success, result = pcall(func)
-    if not success then
-        return false, 'Error: ' .. result
-    end
-    return true, result
+-- Utility function to convert ether to wei
+local function etherToWei(ether)
+    return ether * 10^18
 end
 
---- Validates a number against a range
--- @param num The number to validate
--- @param min The minimum acceptable value
--- @param max The maximum acceptable value
--- @return The original number or an error message
-function M.validateNumberRange(num, min, max)
-    M.checkNil(num, 'Number must not be nil')
-    if num < min or num > max then
-        error(string.format('Number %d is out of range (%d - %d)', num, min, max))
+-- Utility function to generate a random ID
+local function generateRandomID(length)
+    local charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    local result = ''
+    for i = 1, length do
+        local rand = math.random(#charset)
+        result = result .. charset:sub(rand, rand)
     end
-    return num
+    return result
 end
 
-return M
+-- Utility function to check if an address is valid
+local function isValidAddress(address)
+    return string.match(address, '^0x%x+$') and #address == 42
+end
+
+return {
+    weiToEther = weiToEther,
+    etherToWei = etherToWei,
+    generateRandomID = generateRandomID,
+    isValidAddress = isValidAddress,
+}

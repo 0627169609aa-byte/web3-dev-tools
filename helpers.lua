@@ -1,32 +1,29 @@
--- Utility function to convert wei to ether
-local function weiToEther(wei)
-    return wei / 10^18
-end
+-- Retry logic for network operations
 
--- Utility function to convert ether to wei
-local function etherToWei(ether)
-    return ether * 10^18
-end
+local http = require('http')
 
--- Utility function to generate a random ID
-local function generateRandomID(length)
-    local charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    local result = ''
-    for i = 1, length do
-        local rand = math.random(#charset)
-        result = result .. charset:sub(rand, rand)
+-- Function to perform a network operation with retry logic
+local function performNetworkOperation(url, maxRetries, delay)
+    local attempts = 0
+    local success, response
+
+    while attempts < maxRetries do
+        attempts = attempts + 1
+        success, response = pcall(function() return http.get(url) end)
+
+        if success and response.statusCode == 200 then
+            return response.body
+        elseif not success then
+            print('Network error: ' .. response)
+        else
+            print('Attempt ' .. attempts .. ' failed with status: ' .. response.statusCode)
+        end
+
+        -- Wait before the next attempt
+        os.execute('sleep ' .. delay)
     end
-    return result
+
+    error('Failed to reach URL after ' .. maxRetries .. ' attempts')
 end
 
--- Utility function to check if an address is valid
-local function isValidAddress(address)
-    return string.match(address, '^0x%x+$') and #address == 42
-end
-
-return {
-    weiToEther = weiToEther,
-    etherToWei = etherToWei,
-    generateRandomID = generateRandomID,
-    isValidAddress = isValidAddress,
-}
+return { performNetworkOperation = performNetworkOperation }

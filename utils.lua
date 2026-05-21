@@ -1,43 +1,41 @@
--- Utility functions for gaming data handling
+-- Utility functions for input validation
 
-local Utils = {}
-
---- Splits a string by a given delimiter
--- @param str The input string
--- @param delimiter The character to split on
--- @return table A table of split strings
-function Utils.splitString(str, delimiter)
-    local result = {}
-    for match in (str..delimiter):gmatch("(.-)"..delimiter) do
-        table.insert(result, match)
-    end
-    return result
+local function isValidPlayerName(name)
+    return type(name) == 'string' and #name > 0 and #name <= 20
 end
 
---- Calculates the average value of a table
--- @param values A table of numbers
--- @return number The average value
-function Utils.calculateAverage(values)
-    local sum = 0
-    for _, value in ipairs(values) do
-        sum = sum + value
+local function isValidGameAction(action)
+    local validActions = { 'move', 'jump', 'attack', 'defend' }
+    for _, v in ipairs(validActions) do
+        if v == action then
+            return true
+        end
     end
-    return #values > 0 and (sum / #values) or 0
+    return false
 end
 
---- Merges two tables into one
--- @param t1 The first table
--- @param t2 The second table
--- @return table A new table that combines both
-function Utils.mergeTables(t1, t2)
-    local merged = {}
-    for k, v in pairs(t1) do
-        merged[k] = v
+local function validateInputs(playerName, action)
+    if not isValidPlayerName(playerName) then
+        return false, 'Invalid player name. Must be a non-empty string up to 20 characters.'
     end
-    for k, v in pairs(t2) do
-        merged[k] = v
+    if not isValidGameAction(action) then
+        return false, 'Invalid action. Must be one of: move, jump, attack, defend.'
     end
-    return merged
+    return true, 'Valid inputs.'
 end
 
-return Utils
+-- Main processing loop for handling player actions
+local function mainProcessingLoop(playerName, action)
+    local isValid, message = validateInputs(playerName, action)
+    if not isValid then
+        print('Validation Error: ' .. message)
+        return
+    end
+    -- Continue with processing the action...
+    print('Processing action: ' .. action .. ' for player: ' .. playerName)
+end
+
+return {
+    mainProcessingLoop = mainProcessingLoop,
+    validateInputs = validateInputs
+}

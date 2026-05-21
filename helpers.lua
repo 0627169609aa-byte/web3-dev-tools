@@ -1,29 +1,49 @@
--- Retry logic for network operations
+-- Configuration loader with default values
 
-local http = require('http')
+local json = require('dkjson') -- Ensure dkjson is available for JSON handling
 
--- Function to perform a network operation with retry logic
-local function performNetworkOperation(url, maxRetries, delay)
-    local attempts = 0
-    local success, response
+local M = {}
 
-    while attempts < maxRetries do
-        attempts = attempts + 1
-        success, response = pcall(function() return http.get(url) end)
+-- Default configuration
+local defaultConfig = {
+    server = {
+        host = 'localhost',
+        port = 8080
+    },
+    database = {
+        type = 'sqlite',
+        name = 'game.db'
+    },
+    logging = {
+        level = 'info'
+    }
+}
 
-        if success and response.statusCode == 200 then
-            return response.body
-        elseif not success then
-            print('Network error: ' .. response)
+-- Function to deep merge two tables
+local function mergeTables(t1, t2)
+    for k, v in pairs(t2) do
+        if type(v) == 'table' and type(t1[k] or false) == 'table' then
+            mergeTables(t1[k], v)
         else
-            print('Attempt ' .. attempts .. ' failed with status: ' .. response.statusCode)
+            t1[k] = v
         end
-
-        -- Wait before the next attempt
-        os.execute('sleep ' .. delay)
     end
-
-    error('Failed to reach URL after ' .. maxRetries .. ' attempts')
+    return t1
 end
 
-return { performNetworkOperation = performNetworkOperation }
+-- Load configuration from a JSON file
+function M.loadConfig(filePath)
+    local file, err = io.open(filePath, 'r')
+    if not file then
+        return defaultConfig -- Load defaults if file can't be opened
+    end
+    local content = file:read('*a')
+    file:close()
+    local userConfig, pos, err = json.decode(content, 1, nil)
+    if err then
+        error('Error parsing JSON at position ' .. pos .. ': ' .. err)
+    end
+    return mergeTables(defaultConfig, userConfig)
+end
+
+return M

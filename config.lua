@@ -1,36 +1,54 @@
--- Configuration Loader with Defaults
+-- Configuration loader with defaults
 
-local json = require('json')
+local Config = {}
 
+-- Default configuration
 local defaultConfig = {
-    gameName = 'Web3 Game',
-    maxPlayers = 100,
-    enableRewards = true,
-    serverRegion = 'us-east',
-    databaseUrl = 'mongodb://localhost:27017/game'
+    database = {
+        host = 'localhost',
+        port = 5432,
+        user = 'admin',
+        password = 'password',
+        db_name = 'game_db'
+    },
+    gameplay = {
+        difficulty = 'normal',
+        max_players = 4,
+        min_players = 1
+    },
+    graphics = {
+        resolution = '1920x1080',
+        fullscreen = true
+    }
 }
 
+-- Load user configuration from file
 local function loadConfig(filePath)
-    local file, err = io.open(filePath, 'r')
-    if err then
-        print('Error opening config file: ' .. err)
-        return defaultConfig  -- Return defaults if file not found or error
+    local file = io.open(filePath, 'r')
+    if not file then
+        return defaultConfig -- Return defaults if file doesn't exist
     end
-
     local content = file:read('*a')
     file:close()
-
-    local userConfig
-    local success, err = pcall(function()
-        userConfig = json.decode(content)
-    end)
-
-    if not success then
-        print('Error parsing config file: ' .. err)
-        return defaultConfig  -- Return defaults on parse error
-    end
-
-    return setmetatable(userConfig or {}, {__index = defaultConfig})
+    local userConfig = assert(load('return ' .. content))()
+    return mergeConfigs(defaultConfig, userConfig)
 end
 
-return { loadConfig = loadConfig }
+-- Merge user configuration with defaults
+local function mergeConfigs(defaults, user)
+    for k, v in pairs(user) do
+        if type(v) == 'table' and type(defaults[k]) == 'table' then
+            mergeConfigs(defaults[k], v)
+        else
+            defaults[k] = v
+        end
+    end
+    return defaults
+end
+
+-- Expose the loadConfig function
+function Config.load(filePath)
+    return loadConfig(filePath)
+end
+
+return Config

@@ -1,29 +1,36 @@
--- Configuration settings for the game
+-- Configuration Loader with Defaults
 
-local config = {}
+local json = require('json')
 
--- Game settings
-config.game_name = "MyWeb3Game"
-config.version = "1.0.0"
-config.environment = "development"
+local defaultConfig = {
+    gameName = 'Web3 Game',
+    maxPlayers = 100,
+    enableRewards = true,
+    serverRegion = 'us-east',
+    databaseUrl = 'mongodb://localhost:27017/game'
+}
 
--- Database settings
-config.database = {}
-config.database.host = "localhost"
-config.database.port = 5432
-config.database.username = "user"
-config.database.password = "password"
-config.database.name = "web3_db"
+local function loadConfig(filePath)
+    local file, err = io.open(filePath, 'r')
+    if err then
+        print('Error opening config file: ' .. err)
+        return defaultConfig  -- Return defaults if file not found or error
+    end
 
--- Smart contract settings
-config.contracts = {}
-config.contracts.token_address = "0xABCDEF1234567890"
-config.contracts.game_address = "0x0987654321FEDCBA"
+    local content = file:read('*a')
+    file:close()
 
--- IPFS settings
-config.ipfs = {}
-config.ipfs.host = "https://ipfs.infura.io"
-config.ipfs.port = 5001
+    local userConfig
+    local success, err = pcall(function()
+        userConfig = json.decode(content)
+    end)
 
--- Return the configuration
-return config
+    if not success then
+        print('Error parsing config file: ' .. err)
+        return defaultConfig  -- Return defaults on parse error
+    end
+
+    return setmetatable(userConfig or {}, {__index = defaultConfig})
+end
+
+return { loadConfig = loadConfig }

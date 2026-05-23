@@ -1,45 +1,27 @@
--- Logger setup with rotation
+-- Input validation for game session
 
-local log = require('log')
-local lfs = require('lfs')
-local rotation_interval = 24 * 60 * 60 -- Rotate every 24 hours
-local log_file = 'game_log.txt'
-local max_log_size = 5 * 1024 * 1024 -- 5 MB
-
--- Function to check and rotate log files
-local function rotate_log()
-    local log_size = lfs.attributes(log_file, 'size')
-    if log_size and log_size > max_log_size then
-        local timestamp = os.date('%Y%m%d_%H%M%S')
-        local new_log_file = string.format('game_log_%s.txt', timestamp)
-        os.rename(log_file, new_log_file)
-    end
+local function isValidInput(input)
+    return type(input) == "string" and #input > 0
 end
 
--- Logger function
-local function logger(message)
-    rotate_log()
-    local log_entry = string.format('%s - %s\n', os.date('%Y-%m-%d %H:%M:%S'), message)
-    local file = io.open(log_file, 'a')
-    if file then
-        file:write(log_entry)
-        file:close()
-    else
-        print('Failed to open log file')
+local function processGameInput(input)
+    if not isValidInput(input) then
+        print("Invalid input. Please provide a non-empty string.")
+        return
     end
+
+    -- Process the valid game input
+    print("Processing game input: " .. input)
+    -- Add game logic here
 end
 
--- Set up timed rotation check
-local function start_rotation_timer()
+local function mainLoop()
     while true do
-        logger('Checking log rotation')
-        rotate_log()
-        os.execute('sleep ' .. rotation_interval)
+        io.write("Enter game command: ")
+        local userInput = io.read()
+        processGameInput(userInput)
     end
 end
 
--- Start the logger
-logger('Logger initialized')
-start_rotation_timer()
-
-return { log = logger }
+-- Start the main processing loop
+mainLoop()

@@ -1,46 +1,53 @@
 -- Utility functions for common operations
 
-local utils = {}
+local Utils = {}
 
---- Check if a string is empty.
--- @param str The string to check.
--- @return boolean indicating if the string is empty.
-function utils.isEmpty(str)
-    return str == nil or str == ''
+--- Check if a value is present in a table
+-- @param tbl The table to check
+-- @param value The value to find
+-- @return boolean True if value is found
+function Utils.contains(tbl, value)
+    for _, v in ipairs(tbl) do
+        if v == value then
+            return true
+        end
+    end
+    return false
 end
 
---- Generate a random integer within a range.
--- @param min The minimum value (inclusive).
--- @param max The maximum value (inclusive).
--- @return A random integer between min and max.
-function utils.randomRange(min, max)
+--- Merge two tables
+-- @param tbl1 The first table
+-- @param tbl2 The second table
+-- @return table Merged table
+function Utils.merge(tbl1, tbl2)
+    local merged = {}
+    for k, v in pairs(tbl1) do
+        merged[k] = v
+    end
+    for k, v in pairs(tbl2) do
+        merged[k] = v
+    end
+    return merged
+end
+
+--- Generate a random number within a range
+-- @param min The minimum value
+-- @param max The maximum value
+-- @return number A random number between min and max
+function Utils.random(min, max)
     return math.random(min, max)
 end
 
---- Shuffle an array in place.
--- @param tbl The table (array) to shuffle.
-function utils.shuffleArray(tbl)
-    for i = #tbl, 2, -1 do
-        local j = math.random(i)
-        tbl[i], tbl[j] = tbl[j], tbl[i]
-    end
+--- Convert a hexadecimal string to RGB
+-- @param hex The hexadecimal color string
+-- @return table RGB value as table {r, g, b}
+function Utils.hexToRGB(hex)
+    hex = hex:gsub('#', '')
+    return {
+        tonumber(hex:sub(1, 2), 16),
+        tonumber(hex:sub(3, 4), 16),
+        tonumber(hex:sub(5, 6), 16)
+    }
 end
 
---- Deep copy a table.
--- @param orig The table to copy.
--- @return A new table that is a deep copy of orig.
-function utils.deepCopy(orig)
-    local copy
-    if type(orig) == 'table' then
-        copy = {}
-        for key, value in next, orig, nil do
-            copy[utils.deepCopy(key)] = utils.deepCopy(value)
-        end
-        setmetatable(copy, utils.deepCopy(getmetatable(orig)))
-    else
-        copy = orig
-    end
-    return copy
-end
-
-return utils
+return Utils

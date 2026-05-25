@@ -1,35 +1,33 @@
--- Configuration Loader with Defaults
-
-local json = require('json') -- JSON library for decoding
+-- Configuration settings for the game
 
 local Config = {}
 
--- Default configuration values
-Config.defaults = {
-    host = 'localhost',
-    port = 8080,
-    timeout = 30,
-    use_ssl = false
-}
+-- Game settings
+Config.gameTitle = 'My Web3 Game'
+Config.maxPlayers = 100
+Config.startingTokens = 1000
 
--- Function to load configuration from a file
-function Config.load(configFile)
-    local file, err = io.open(configFile, 'r')
-    if err then
-        print('Error loading config file: ' .. err)
-        return Config.defaults -- return defaults on error
+-- Validate player input
+local function isValidPlayerName(name)
+    return type(name) == 'string' and #name > 0 and #name <= 20
+end
+
+local function isValidPlayerCount(count)
+    return type(count) == 'number' and count > 0 and count <= Config.maxPlayers
+end
+
+-- Main processing loop
+function Config.initializeGame(playerName, playerCount)
+    if not isValidPlayerName(playerName) then
+        error('Invalid player name: ' .. tostring(playerName))
     end
-
-    local content = file:read('*a')
-    file:close()
-    local configFromFile = json.decode(content)
-
-    -- Merge file config with defaults
-    for key, value in pairs(Config.defaults) do
-        configFromFile[key] = configFromFile[key] or value
+    
+    if not isValidPlayerCount(playerCount) then
+        error('Invalid player count: ' .. tostring(playerCount))
     end
+    
+    print('Initializing game with player:', playerName, 'and player count:', playerCount)
 
-    return configFromFile
 end
 
 return Config

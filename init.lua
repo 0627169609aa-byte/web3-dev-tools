@@ -1,36 +1,56 @@
--- Initialization module for web3-dev-tools.
+--[[
+    This module initializes the game settings and configurations.
+    It allows for basic setup operations and resource loading to prepare the game environment.
+]]
 
-local init = {}
+---
 
--- Set up default configuration
-local defaultConfig = {
-    network = 'mainnet',
-    walletAddress = nil,
-    gameTitle = 'My Game',
-}
-
--- Initialize the game context
-function init.setup(config)
-    local finalConfig = {}
-    for key, value in pairs(defaultConfig) do
-        finalConfig[key] = config[key] or value
+--- Initializes the game configuration
+-- @return boolean success - whether the initialization was successful
+function initGameConfig() 
+    local config = {}  -- configuration table
+    
+    -- Set default values 
+    config.screenWidth = 800 
+    config.screenHeight = 600 
+    config.fullscreen = false 
+    config.title = 'Web3 Game'
+    config.enableDebug = true
+    
+    -- Load resources (e.g. images, sounds)
+    local success = loadResources(config)
+    if not success then
+        return false
     end
-    return finalConfig
+    
+    -- Apply configuration settings
+    applySettings(config)
+    return true
 end
 
--- Load the game assets
-function init.loadAssets(assets)
-    for _, asset in ipairs(assets) do
-        print('Loading asset: ' .. asset)
-        -- Insert asset loading logic here
-    end
+--- Loads game resources
+-- @param config table - the configuration table
+-- @return boolean success - whether loading was successful
+function loadResources(config) 
+    -- Placeholder for resource loading logic
+    print('Loading resources...')  
+    return true  -- Simulate successful resource loading
 end
 
--- Example of starting the game
-function init.startGame(config)
-    local gameConfig = init.setup(config)
-    print('Starting ' .. gameConfig.gameTitle .. ' on ' .. gameConfig.network)
-    -- Call other initialization functions as needed
+--- Applies the configuration settings
+-- @param config table - the configuration table
+function applySettings(config)
+    print('Applying settings:')
+    print(' - Screen Size: ' .. config.screenWidth .. 'x' .. config.screenHeight)
+    print(' - Fullscreen: ' .. tostring(config.fullscreen))
+    print(' - Title: ' .. config.title)
+    print(' - Debug Mode: ' .. tostring(config.enableDebug))
 end
 
-return init
+-- Run game configuration initialization
+gameInitialized = initGameConfig()
+if gameInitialized then
+    print('Game initialized successfully!')
+else
+    print('Game failed to initialize.')
+end

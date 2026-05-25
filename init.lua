@@ -1,56 +1,34 @@
---[[
-    This module initializes the game settings and configurations.
-    It allows for basic setup operations and resource loading to prepare the game environment.
-]]
+-- type annotations for Lua using LuaJIT's support
+-- @param string: name of the game
+-- @param string: version of the game
+-- @param table: options for game settings
+-- @return table: initialized game settings
 
----
+local Game = {}
 
---- Initializes the game configuration
--- @return boolean success - whether the initialization was successful
-function initGameConfig() 
-    local config = {}  -- configuration table
-    
-    -- Set default values 
-    config.screenWidth = 800 
-    config.screenHeight = 600 
-    config.fullscreen = false 
-    config.title = 'Web3 Game'
-    config.enableDebug = true
-    
-    -- Load resources (e.g. images, sounds)
-    local success = loadResources(config)
-    if not success then
-        return false
+--- Initializes a new game with specified settings
+-- @param name string: the name of the game
+-- @param version string: the version of the game
+-- @param options table: additional settings for the game
+-- @return table: the initialized game object
+function Game:init(name, version, options)
+    local gameSettings = {
+        name = name,
+        version = version,
+        options = options or {},
+        state = 'initialized',
+    }
+    return gameSettings
+end
+
+--- Starts the game
+-- @param game table: the game object to start
+function Game:start(game)
+    if game.state ~= 'initialized' then
+        error('Game must be initialized before starting')
     end
-    
-    -- Apply configuration settings
-    applySettings(config)
-    return true
+    game.state = 'running'
+    print(game.name .. ' is now running!')
 end
 
---- Loads game resources
--- @param config table - the configuration table
--- @return boolean success - whether loading was successful
-function loadResources(config) 
-    -- Placeholder for resource loading logic
-    print('Loading resources...')  
-    return true  -- Simulate successful resource loading
-end
-
---- Applies the configuration settings
--- @param config table - the configuration table
-function applySettings(config)
-    print('Applying settings:')
-    print(' - Screen Size: ' .. config.screenWidth .. 'x' .. config.screenHeight)
-    print(' - Fullscreen: ' .. tostring(config.fullscreen))
-    print(' - Title: ' .. config.title)
-    print(' - Debug Mode: ' .. tostring(config.enableDebug))
-end
-
--- Run game configuration initialization
-gameInitialized = initGameConfig()
-if gameInitialized then
-    print('Game initialized successfully!')
-else
-    print('Game failed to initialize.')
-end
+return Game

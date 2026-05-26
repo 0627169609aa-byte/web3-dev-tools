@@ -1,53 +1,51 @@
--- Utility functions for common operations
+-- Utility functions for network operations
 
-local Utils = {}
+local http = require("socket.http")
+local ltn12 = require("ltn12")
 
---- Check if a value is present in a table
--- @param tbl The table to check
--- @param value The value to find
--- @return boolean True if value is found
-function Utils.contains(tbl, value)
-    for _, v in ipairs(tbl) do
-        if v == value then
-            return true
+local function retryNetworkOperation(operation, maxRetries, delay)
+    maxRetries = maxRetries or 3  -- set default max retries to 3
+    delay = delay or 1000  -- set default delay to 1000 ms
+    local attempt = 0
+    local success, result
+
+    repeat
+        attempt = attempt + 1
+        success, result = pcall(operation)  -- safely call the operation
+        if not success then
+            print(string.format("Attempt %d failed: %s", attempt, result))
+            if attempt < maxRetries then
+                os.execute(string.format("sleep %d", delay / 1000))  -- wait before retry
+            end
         end
+    until success or attempt >= maxRetries
+
+    if not success then
+        error(string.format("Operation failed after %d attempts", maxRetries))
     end
-    return false
+    return result
 end
 
---- Merge two tables
--- @param tbl1 The first table
--- @param tbl2 The second table
--- @return table Merged table
-function Utils.merge(tbl1, tbl2)
-    local merged = {}
-    for k, v in pairs(tbl1) do
-        merged[k] = v
-    end
-    for k, v in pairs(tbl2) do
-        merged[k] = v
-    end
-    return merged
-end
-
---- Generate a random number within a range
--- @param min The minimum value
--- @param max The maximum value
--- @return number A random number between min and max
-function Utils.random(min, max)
-    return math.random(min, max)
-end
-
---- Convert a hexadecimal string to RGB
--- @param hex The hexadecimal color string
--- @return table RGB value as table {r, g, b}
-function Utils.hexToRGB(hex)
-    hex = hex:gsub('#', '')
-    return {
-        tonumber(hex:sub(1, 2), 16),
-        tonumber(hex:sub(3, 4), 16),
-        tonumber(hex:sub(5, 6), 16)
+local function fetchUrl(url)
+    local response_body = {}
+    local res, code = http.request{
+        url = url,
+        sink = ltn12.sink.table(response_body)
     }
+
+    if code ~= 200 then
+        error(string.format("HTTP request failed with code %d", code))
+    end
+    return table.concat(response_body)
 end
 
-return Utils
+-- Fetch URL with retry logic
+local function fetchWithRetry(url)
+    return retryNetworkOperation(function()
+        return fetchUrl(url)
+    end, 5, 2000)  -- 5 retries, 2000 ms delay
+end
+
+return {
+    fetchWithRetry = fetchWithRetry
+}

@@ -1,26 +1,42 @@
--- Main game loop for processing player actions
-local function validateInput(input)
-    if type(input) ~= "string" or #input == 0 then
-        return false, "Input must be a non-empty string."
-    end
-    return true, nil
+-- Core game logic for web3-based gaming
+local game = {}
+
+-- Initializes the game state
+function game.init()
+    game.state = {
+        players = {},
+        turn = 1,
+        winner = nil
+    }
 end
 
-local function processPlayerAction(action)
-    local isValid, errMsg = validateInput(action)
-    if not isValid then
-        print(errMsg)
-        return
-    end
-    -- Process the valid action here
-    print("Processing action: ", action)
+-- Adds a player to the game
+function game.addPlayer(playerName)
+    table.insert(game.state.players, playerName)
 end
 
-local function mainLoop()
-    while true do
-        local playerInput = io.read()  -- Read input from the player
-        processPlayerAction(playerInput)
-    end
+-- Sets the current turn
+function game.setTurn(turn)
+    game.state.turn = turn
 end
 
-mainLoop()
+-- Determines if there's a winner
+function game.checkWinner()
+    if #game.state.players == 0 then
+        return nil
+    end
+    -- Simple logic for a winner based on a random selection
+    if math.random() > 0.5 then
+        game.state.winner = game.state.players[1]
+    else
+        game.state.winner = game.state.players[2]
+    end
+    return game.state.winner
+end
+
+-- Resets the game state
+function game.reset()
+    game.init()
+end
+
+return game

@@ -1,42 +1,33 @@
--- Core game logic for web3-based gaming
-local game = {}
+-- Main processing loop
 
--- Initializes the game state
-function game.init()
-    game.state = {
-        players = {},
-        turn = 1,
-        winner = nil
-    }
+local function isValidInput(input)
+    return type(input) == "table" and input.id and input.value
 end
 
--- Adds a player to the game
-function game.addPlayer(playerName)
-    table.insert(game.state.players, playerName)
-end
-
--- Sets the current turn
-function game.setTurn(turn)
-    game.state.turn = turn
-end
-
--- Determines if there's a winner
-function game.checkWinner()
-    if #game.state.players == 0 then
-        return nil
+local function processInput(input)
+    if not isValidInput(input) then
+        error("Invalid input: must be a table with 'id' and 'value'")
     end
-    -- Simple logic for a winner based on a random selection
-    if math.random() > 0.5 then
-        game.state.winner = game.state.players[1]
-    else
-        game.state.winner = game.state.players[2]
+
+    -- Process the valid input
+    print(string.format("Processing input with ID: %s and Value: %s", input.id, input.value))
+    -- Add your processing logic here
+end
+
+local function mainLoop(inputs)
+    for _, input in ipairs(inputs) do
+        local status, err = pcall(processInput, input)
+        if not status then
+            print("Error processing input:", err)
+        end
     end
-    return game.state.winner
 end
 
--- Resets the game state
-function game.reset()
-    game.init()
-end
+-- Example usage with sample inputs
+local inputs = {
+    {id = 1, value = "player1"},
+    {value = "player2"},  -- Invalid input
+    {id = 3, value = "player3"}
+}
 
-return game
+mainLoop(inputs)

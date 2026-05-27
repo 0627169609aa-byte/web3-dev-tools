@@ -1,33 +1,40 @@
--- Configuration settings for the game
+-- Configuration Loader with Defaults
 
 local Config = {}
 
--- Game settings
-Config.gameTitle = 'My Web3 Game'
-Config.maxPlayers = 100
-Config.startingTokens = 1000
+-- Default configuration values
+local defaultConfig = {
+    host = "localhost",
+    port = 8080,
+    database = "my_database",
+    debug = false,
+    max_connections = 100
+}
 
--- Validate player input
-local function isValidPlayerName(name)
-    return type(name) == 'string' and #name > 0 and #name <= 20
+-- Function to load configuration from a file
+function Config.loadConfig(filePath)
+    local config = setmetatable({}, {__index = defaultConfig})
+
+    local file = io.open(filePath, "r")
+    if not file then
+        print("Configuration file not found, using defaults.")
+        return config
+    end
+
+    local content = file:read("*a")
+    file:close()
+
+    local loadedConfig = load(content)()
+    for key, value in pairs(loadedConfig) do
+        config[key] = value
+    end
+
+    return config
 end
 
-local function isValidPlayerCount(count)
-    return type(count) == 'number' and count > 0 and count <= Config.maxPlayers
-end
-
--- Main processing loop
-function Config.initializeGame(playerName, playerCount)
-    if not isValidPlayerName(playerName) then
-        error('Invalid player name: ' .. tostring(playerName))
-    end
-    
-    if not isValidPlayerCount(playerCount) then
-        error('Invalid player count: ' .. tostring(playerCount))
-    end
-    
-    print('Initializing game with player:', playerName, 'and player count:', playerCount)
-
+-- Function to get a configuration value
+function Config.get(key)
+    return defaultConfig[key]
 end
 
 return Config

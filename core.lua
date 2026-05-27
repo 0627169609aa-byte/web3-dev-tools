@@ -1,33 +1,48 @@
--- Main processing loop
+-- Utility function to handle gaming data
 
-local function isValidInput(input)
-    return type(input) == "table" and input.id and input.value
-end
+local M = {}
 
-local function processInput(input)
-    if not isValidInput(input) then
-        error("Invalid input: must be a table with 'id' and 'value'")
+-- Function to parse player stats from JSON input
+-- @param jsonInput: string containing JSON player stats
+-- @return table: parsed player stats
+function M.parsePlayerStats(jsonInput)
+    local json = require('cjson') -- Lua CJSON library for JSON handling
+    local success, data = pcall(json.decode, jsonInput)
+    
+    if not success then
+        error('Invalid JSON input: ' .. data)
     end
-
-    -- Process the valid input
-    print(string.format("Processing input with ID: %s and Value: %s", input.id, input.value))
-    -- Add your processing logic here
+    
+    return data
 end
 
-local function mainLoop(inputs)
-    for _, input in ipairs(inputs) do
-        local status, err = pcall(processInput, input)
-        if not status then
-            print("Error processing input:", err)
+-- Function to calculate average score from player scores
+-- @param scores: table containing player scores
+-- @return number: average score
+function M.calculateAverageScore(scores)
+    local total = 0
+    local count = #scores
+    
+    for _, score in ipairs(scores) do
+        total = total + score
+    end
+    
+    return total / count
+end
+
+-- Function to find the highest score
+-- @param scores: table containing player scores
+-- @return number: highest score
+function M.findHighestScore(scores)
+    local highest = scores[1]
+    
+    for _, score in ipairs(scores) do
+        if score > highest then
+            highest = score
         end
     end
+    
+    return highest
 end
 
--- Example usage with sample inputs
-local inputs = {
-    {id = 1, value = "player1"},
-    {value = "player2"},  -- Invalid input
-    {id = 3, value = "player3"}
-}
-
-mainLoop(inputs)
+return M

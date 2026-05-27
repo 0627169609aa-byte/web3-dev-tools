@@ -1,48 +1,44 @@
--- Utility function to handle gaming data
+-- Core module for performance optimization
 
-local M = {}
-
--- Function to parse player stats from JSON input
--- @param jsonInput: string containing JSON player stats
--- @return table: parsed player stats
-function M.parsePlayerStats(jsonInput)
-    local json = require('cjson') -- Lua CJSON library for JSON handling
-    local success, data = pcall(json.decode, jsonInput)
-    
-    if not success then
-        error('Invalid JSON input: ' .. data)
+local function optimizeDataProcessing(data)
+    local processed = {}
+    for key, value in pairs(data) do
+        -- Preallocation for known size improves performance
+        processed[key] = value * 2
     end
-    
-    return data
+    return processed
 end
 
--- Function to calculate average score from player scores
--- @param scores: table containing player scores
--- @return number: average score
-function M.calculateAverageScore(scores)
-    local total = 0
-    local count = #scores
-    
-    for _, score in ipairs(scores) do
-        total = total + score
+local function cacheRecentResults(cache, key, result)
+    if #cache >= 100 then
+        table.remove(cache, 1)  -- Maintain cache size
     end
-    
-    return total / count
+    table.insert(cache, { key = key, result = result })
 end
 
--- Function to find the highest score
--- @param scores: table containing player scores
--- @return number: highest score
-function M.findHighestScore(scores)
-    local highest = scores[1]
-    
-    for _, score in ipairs(scores) do
-        if score > highest then
-            highest = score
+local function fetchFromCache(cache, key)
+    for _, entry in ipairs(cache) do
+        if entry.key == key then
+            return entry.result
         end
     end
-    
-    return highest
+    return nil  -- Not found in cache
 end
 
-return M
+local function performCalculation(data)
+    local cache = {}
+    for _, value in ipairs(data) do
+        local cachedResult = fetchFromCache(cache, value)
+        if cachedResult then
+            print('Fetched from cache:', cachedResult)
+        else
+            local result = optimizeDataProcessing({ value })[value]
+            print('Computed result:', result)
+            cacheRecentResults(cache, value, result)
+        end
+    end
+end
+
+return {
+    performCalculation = performCalculation
+}

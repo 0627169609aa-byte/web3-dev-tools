@@ -1,44 +1,32 @@
--- Core module for performance optimization
+-- Core functionalities for web3 gaming
 
-local function optimizeDataProcessing(data)
-    local processed = {}
-    for key, value in pairs(data) do
-        -- Preallocation for known size improves performance
-        processed[key] = value * 2
-    end
-    return processed
+local core = {}
+
+-- Function to convert hex string to decimal
+function core.hexToDecimal(hex)
+    return tonumber(hex, 16)
 end
 
-local function cacheRecentResults(cache, key, result)
-    if #cache >= 100 then
-        table.remove(cache, 1)  -- Maintain cache size
-    end
-    table.insert(cache, { key = key, result = result })
+-- Function to convert decimal to hex string
+function core.decimalToHex(decimal)
+    return string.format("%X", decimal)
 end
 
-local function fetchFromCache(cache, key)
-    for _, entry in ipairs(cache) do
-        if entry.key == key then
-            return entry.result
-        end
-    end
-    return nil  -- Not found in cache
+-- Function to generate a unique player ID
+function core.generatePlayerID()
+    local playerID = "player_" .. math.random(10000, 99999)
+    return playerID
 end
 
-local function performCalculation(data)
-    local cache = {}
-    for _, value in ipairs(data) do
-        local cachedResult = fetchFromCache(cache, value)
-        if cachedResult then
-            print('Fetched from cache:', cachedResult)
-        else
-            local result = optimizeDataProcessing({ value })[value]
-            print('Computed result:', result)
-            cacheRecentResults(cache, value, result)
-        end
-    end
+-- Function to validate Ethereum address
+function core.isValidEthereumAddress(address)
+    return string.match(address, "^0x[a-fA-F0-9]{40}$") ~= nil
 end
 
-return {
-    performCalculation = performCalculation
-}
+-- Function to calculate reward based on score
+function core.calculateReward(score)
+    local baseReward = 10
+    return baseReward * score
+end
+
+return core

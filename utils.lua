@@ -1,51 +1,38 @@
--- Utility functions for network operations
+-- Utility functions for input validation
 
-local http = require("socket.http")
-local ltn12 = require("ltn12")
+local function isValidPlayerInput(input)
+    if type(input) ~= "string" then
+        return false, "Input must be a string"
+    end
+    if #input == 0 then
+        return false, "Input cannot be empty"
+    end
+    return true, ""
+end
 
-local function retryNetworkOperation(operation, maxRetries, delay)
-    maxRetries = maxRetries or 3  -- set default max retries to 3
-    delay = delay or 1000  -- set default delay to 1000 ms
-    local attempt = 0
-    local success, result
-
-    repeat
-        attempt = attempt + 1
-        success, result = pcall(operation)  -- safely call the operation
-        if not success then
-            print(string.format("Attempt %d failed: %s", attempt, result))
-            if attempt < maxRetries then
-                os.execute(string.format("sleep %d", delay / 1000))  -- wait before retry
-            end
+local function isValidGameAction(action)
+    local validActions = {"move", "attack", "defend", "heal"}
+    for _, v in ipairs(validActions) do
+        if v == action then
+            return true, ""
         end
-    until success or attempt >= maxRetries
-
-    if not success then
-        error(string.format("Operation failed after %d attempts", maxRetries))
     end
-    return result
+    return false, "Invalid game action"
 end
 
-local function fetchUrl(url)
-    local response_body = {}
-    local res, code = http.request{
-        url = url,
-        sink = ltn12.sink.table(response_body)
-    }
-
-    if code ~= 200 then
-        error(string.format("HTTP request failed with code %d", code))
+local function processPlayerInput(input, action)
+    local validInput, inputError = isValidPlayerInput(input)
+    if not validInput then
+        return nil, inputError
     end
-    return table.concat(response_body)
-end
-
--- Fetch URL with retry logic
-local function fetchWithRetry(url)
-    return retryNetworkOperation(function()
-        return fetchUrl(url)
-    end, 5, 2000)  -- 5 retries, 2000 ms delay
+    local validAction, actionError = isValidGameAction(action)
+    if not validAction then
+        return nil, actionError
+    end
+    -- Proceed with processing if both input and action are valid
+    return {input = input, action = action}, nil
 end
 
 return {
-    fetchWithRetry = fetchWithRetry
+    processPlayerInput = processPlayerInput
 }

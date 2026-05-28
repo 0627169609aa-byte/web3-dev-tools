@@ -1,32 +1,38 @@
--- Logger setup with rotation in Lua
+-- Utility function to handle gaming data
 
-local logger = {}
-local currentLogSize = 0
-local maxLogSize = 1024 * 1024 -- 1MB
-local logFilePath = 'app.log'
+local json = require('json')
 
-function logger.log(message)
-    local file = io.open(logFilePath, "a")
-    if file then
-        file:write(os.date("%Y-%m-%d %H:%M:%S") .. ' - ' .. message .. '\n')
-        file:close()
-        currentLogSize = currentLogSize + #message + 1
-        checkLogRotation()
+local Helpers = {}
+
+-- Convert gaming data to JSON format
+function Helpers.dataToJson(data)
+    local jsonData, err = json.encode(data)
+    if err then
+        error('JSON encoding error: ' .. err)
     end
+    return jsonData
 end
 
-function checkLogRotation()
-    if currentLogSize >= maxLogSize then
-        rotateLog()
+-- Parse JSON string to Lua table
+function Helpers.jsonToData(jsonString)
+    local data, err = json.decode(jsonString)
+    if err then
+        error('JSON decoding error: ' .. err)
     end
+    return data
 end
 
-function rotateLog()
-    local dateSuffix = os.date("%Y%m%d_%H%M%S")
-    local backupFilePath = 'app_' .. dateSuffix .. '.log'
-    os.rename(logFilePath, backupFilePath)
-    currentLogSize = 0
-    logger.log('Log rotated: ' .. backupFilePath)
+-- Validate if the provided data matches the required structure
+function Helpers.validateDataStructure(data, requiredStructure)
+    for key, value in pairs(requiredStructure) do
+        if data[key] == nil then
+            return false, 'Missing key: ' .. key
+        end
+        if type(data[key]) ~= type(value) then
+            return false, 'Key ' .. key .. ' should be of type ' .. type(value)
+        end
+    end
+    return true
 end
 
-return logger
+return Helpers

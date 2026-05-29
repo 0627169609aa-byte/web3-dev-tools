@@ -1,38 +1,54 @@
--- Utility functions for input validation
+-- Utility functions for gaming data handling
 
-local function isValidPlayerInput(input)
-    if type(input) ~= "string" then
-        return false, "Input must be a string"
+local GameUtils = {}
+
+--- Convert a table of player scores into a sorted list
+-- @param scoresTable A table containing player names and their scores
+-- @return A sorted list of player names based on their scores
+function GameUtils.sortScores(scoresTable)
+    local sortedScores = {}
+    
+    for playerName, score in pairs(scoresTable) do
+        table.insert(sortedScores, {name = playerName, score = score})
     end
-    if #input == 0 then
-        return false, "Input cannot be empty"
-    end
-    return true, ""
+    
+    table.sort(sortedScores, function(a, b) return a.score > b.score end)
+    return sortedScores
 end
 
-local function isValidGameAction(action)
-    local validActions = {"move", "attack", "defend", "heal"}
-    for _, v in ipairs(validActions) do
-        if v == action then
-            return true, ""
+--- Filter player data based on a minimum score
+-- @param players A table containing player names and their scores
+-- @param minScore The minimum score threshold for inclusion
+-- @return A table of player names that meet the score criteria
+function GameUtils.filterPlayersByScore(players, minScore)
+    local filteredPlayers = {}
+    
+    for playerName, score in pairs(players) do
+        if score >= minScore then
+            filteredPlayers[playerName] = score
         end
     end
-    return false, "Invalid game action"
+    
+    return filteredPlayers
 end
 
-local function processPlayerInput(input, action)
-    local validInput, inputError = isValidPlayerInput(input)
-    if not validInput then
-        return nil, inputError
+--- Calculate average score from a list of player scores
+-- @param scoresTable A table containing player scores
+-- @return The average score rounded to two decimal places
+function GameUtils.calculateAverageScore(scoresTable)
+    local totalScore = 0
+    local playerCount = 0
+    
+    for _, score in pairs(scoresTable) do
+        totalScore = totalScore + score
+        playerCount = playerCount + 1
     end
-    local validAction, actionError = isValidGameAction(action)
-    if not validAction then
-        return nil, actionError
+    
+    if playerCount == 0 then
+        return 0
     end
-    -- Proceed with processing if both input and action are valid
-    return {input = input, action = action}, nil
+    
+    return math.floor((totalScore / playerCount) * 100) / 100
 end
 
-return {
-    processPlayerInput = processPlayerInput
-}
+return GameUtils

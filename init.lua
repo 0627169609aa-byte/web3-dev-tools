@@ -1,34 +1,37 @@
--- type annotations for Lua using LuaJIT's support
--- @param string: name of the game
--- @param string: version of the game
--- @param table: options for game settings
--- @return table: initialized game settings
-
-local Game = {}
-
---- Initializes a new game with specified settings
--- @param name string: the name of the game
--- @param version string: the version of the game
--- @param options table: additional settings for the game
--- @return table: the initialized game object
-function Game:init(name, version, options)
-    local gameSettings = {
-        name = name,
-        version = version,
-        options = options or {},
-        state = 'initialized',
+-- Initialize game settings
+local function initializeGameSettings()
+    return {
+        playerName = "Player1",
+        maxPlayers = 4,
+        gameSpeed = 1.0
     }
-    return gameSettings
 end
 
---- Starts the game
--- @param game table: the game object to start
-function Game:start(game)
-    if game.state ~= 'initialized' then
-        error('Game must be initialized before starting')
+-- Validate input settings
+local function validateSettings(settings)
+    if type(settings.playerName) ~= "string" or settings.playerName == "" then
+        error("Invalid player name. It must be a non-empty string.")
     end
-    game.state = 'running'
-    print(game.name .. ' is now running!')
+    if type(settings.maxPlayers) ~= "number" or settings.maxPlayers < 1 then
+        error("Invalid max players. It must be a number greater than 0.")
+    end
+    if type(settings.gameSpeed) ~= "number" or settings.gameSpeed <= 0 then
+        error("Invalid game speed. It must be a number greater than 0.")
+    end
 end
 
-return Game
+-- Main processing loop
+local function main()
+    local gameSettings = initializeGameSettings()
+    validateSettings(gameSettings)  
+
+    -- Game loop
+    while true do
+        print("Game running with settings:", gameSettings.playerName, gameSettings.maxPlayers, gameSettings.gameSpeed)
+        -- Simulated game processing...
+        os.execute("sleep 1") -- Simulate wait
+    end
+end
+
+-- Start the game
+main()

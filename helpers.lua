@@ -1,38 +1,35 @@
--- Utility function to handle gaming data
+--[[]]
+-- @module helpers
+-- @description This module provides utility functions for web3 gaming development.
+-- @copyright 2023
 
-local json = require('json')
+local helpers = {}
 
-local Helpers = {}
-
--- Convert gaming data to JSON format
-function Helpers.dataToJson(data)
-    local jsonData, err = json.encode(data)
-    if err then
-        error('JSON encoding error: ' .. err)
-    end
-    return jsonData
+--- Get the current timestamp in milliseconds.
+-- @return number The current timestamp in milliseconds.
+function helpers.getCurrentTimestamp()
+    return os.time() * 1000
 end
 
--- Parse JSON string to Lua table
-function Helpers.jsonToData(jsonString)
-    local data, err = json.decode(jsonString)
-    if err then
-        error('JSON decoding error: ' .. err)
-    end
-    return data
+--- Check if a given value is a valid address.
+-- @param address string The address to check.
+-- @return boolean True if valid, otherwise false.
+function helpers.isValidAddress(address)
+    return type(address) == 'string' and string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
 end
 
--- Validate if the provided data matches the required structure
-function Helpers.validateDataStructure(data, requiredStructure)
-    for key, value in pairs(requiredStructure) do
-        if data[key] == nil then
-            return false, 'Missing key: ' .. key
-        end
-        if type(data[key]) ~= type(value) then
-            return false, 'Key ' .. key .. ' should be of type ' .. type(value)
-        end
-    end
-    return true
+--- Format a number to a fixed decimal point.
+-- @param number number The number to format.
+-- @param decimals number The number of decimal places.
+-- @return string The formatted number as a string.
+function helpers.formatNumber(number, decimals)
+    return string.format('%.*f', decimals, number)
 end
 
-return Helpers
+--- Generate a random unique identifier for players.
+-- @return string A random unique identifier.
+function helpers.generateUniqueId()
+    return 'uid_' .. tostring(math.random(100000, 999999)) .. '_' .. tostring(os.time())
+end
+
+return helpers

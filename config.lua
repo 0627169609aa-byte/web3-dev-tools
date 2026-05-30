@@ -1,31 +1,31 @@
--- logger setup for web3-dev-tools
-local log = require('log')
-local lfs = require('lfs')
+-- Configuration loader with defaults
 
-local function setupLogger(logFile)
-    -- create logs directory if it doesn't exist
-    local logDir = 'logs'
-    if not lfs.attributes(logDir) then
-        lfs.mkdir(logDir)
+local Config = {}
+
+-- Default configurations
+local defaultConfig = {
+    server = "localhost",
+    port = 8080,
+    maxPlayers = 100,
+    gameName = "MyAwesomeGame",
+    enableLogging = true
+}
+
+-- Function to load configuration
+function Config.loadConfig(userConfig)
+    local finalConfig = {}
+    -- Merge user configuration with defaults
+    for key, value in pairs(defaultConfig) do
+        finalConfig[key] = userConfig[key] or value
     end
-
-    -- define log file path
-    local fullLogPath = logDir .. '/' .. logFile
-
-    -- create logger with rotation
-    local logger = log:new({
-        file = fullLogPath,
-        level = log.levels.INFO,
-        maxSize = 10 * 1024 * 1024,  -- 10 MB
-        maxFiles = 5,
-        rotate = true,
-    })
-
-    return logger
+    return finalConfig
 end
 
--- set up the logger
-local logger = setupLogger('app.log')
+-- Function to display current config
+function Config.displayConfig(config)
+    for key, value in pairs(config) do
+        print(key .. ": " .. tostring(value))
+    end
+end
 
--- export logger for use in other modules
-return { logger = logger }
+return Config

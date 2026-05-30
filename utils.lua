@@ -1,54 +1,42 @@
--- Utility functions for gaming data handling
+-- Optimized function to calculate hash for game data
 
-local GameUtils = {}
-
---- Convert a table of player scores into a sorted list
--- @param scoresTable A table containing player names and their scores
--- @return A sorted list of player names based on their scores
-function GameUtils.sortScores(scoresTable)
-    local sortedScores = {}
-    
-    for playerName, score in pairs(scoresTable) do
-        table.insert(sortedScores, {name = playerName, score = score})
+local function calculateHash(data)
+    local hash = 5381
+    for i = 1, #data do
+        hash = ((hash * 33) ~ b[i]) % 0xFFFFFFFF
     end
-    
-    table.sort(sortedScores, function(a, b) return a.score > b.score end)
-    return sortedScores
+    return hash
 end
 
---- Filter player data based on a minimum score
--- @param players A table containing player names and their scores
--- @param minScore The minimum score threshold for inclusion
--- @return A table of player names that meet the score criteria
-function GameUtils.filterPlayersByScore(players, minScore)
-    local filteredPlayers = {}
-    
-    for playerName, score in pairs(players) do
-        if score >= minScore then
-            filteredPlayers[playerName] = score
+-- Optimized function to combine tables
+local function mergeTables(t1, t2)
+    local result = {}
+    for k, v in pairs(t1) do
+        result[k] = v
+    end
+    for k, v in pairs(t2) do
+        if result[k] == nil then
+            result[k] = v
         end
     end
-    
-    return filteredPlayers
+    return result
 end
 
---- Calculate average score from a list of player scores
--- @param scoresTable A table containing player scores
--- @return The average score rounded to two decimal places
-function GameUtils.calculateAverageScore(scoresTable)
-    local totalScore = 0
-    local playerCount = 0
-    
-    for _, score in pairs(scoresTable) do
-        totalScore = totalScore + score
-        playerCount = playerCount + 1
+-- Caching previously calculated hashes to improve performance
+local hashCache = {}
+function getCachedHash(data)
+    local key = table.concat(data, ",")
+    if hashCache[key] then
+        return hashCache[key]
+    else
+        local newHash = calculateHash(data)
+        hashCache[key] = newHash
+        return newHash
     end
-    
-    if playerCount == 0 then
-        return 0
-    end
-    
-    return math.floor((totalScore / playerCount) * 100) / 100
 end
 
-return GameUtils
+return {
+    calculateHash = calculateHash,
+    mergeTables = mergeTables,
+    getCachedHash = getCachedHash,
+}

@@ -1,42 +1,34 @@
--- Optimized function to calculate hash for game data
+-- Logger module with rotation functionality
 
-local function calculateHash(data)
-    local hash = 5381
-    for i = 1, #data do
-        hash = ((hash * 33) ~ b[i]) % 0xFFFFFFFF
-    end
-    return hash
+local logger = {}
+local logFile = 'app.log'
+local maxFileSize = 1024 * 1024 * 5 -- 5 MB
+
+-- Helper function to get file size
+local function getFileSize(filename)
+    local file = io.open(filename, 'r')
+    if not file then return 0 end
+    local size = file:seek('end')
+    file:close()
+    return size
 end
 
--- Optimized function to combine tables
-local function mergeTables(t1, t2)
-    local result = {}
-    for k, v in pairs(t1) do
-        result[k] = v
-    end
-    for k, v in pairs(t2) do
-        if result[k] == nil then
-            result[k] = v
-        end
-    end
-    return result
-end
-
--- Caching previously calculated hashes to improve performance
-local hashCache = {}
-function getCachedHash(data)
-    local key = table.concat(data, ",")
-    if hashCache[key] then
-        return hashCache[key]
-    else
-        local newHash = calculateHash(data)
-        hashCache[key] = newHash
-        return newHash
+-- Rotate log file if it exceeds max size
+local function rotateLogFile()
+    if getFileSize(logFile) >= maxFileSize then
+        local timestamp = os.date('%Y%m%d%H%M%S')
+        os.rename(logFile, logFile .. '.' .. timestamp)
     end
 end
 
-return {
-    calculateHash = calculateHash,
-    mergeTables = mergeTables,
-    getCachedHash = getCachedHash,
-}
+-- Logging function
+function logger.log(message)
+    rotateLogFile()
+    local file = io.open(logFile, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+    end
+end
+
+return logger

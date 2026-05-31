@@ -1,35 +1,47 @@
---[[]]
--- @module helpers
--- @description This module provides utility functions for web3 gaming development.
--- @copyright 2023
+-- Utility functions for gaming data handling
 
-local helpers = {}
+local M = {}
 
---- Get the current timestamp in milliseconds.
--- @return number The current timestamp in milliseconds.
-function helpers.getCurrentTimestamp()
-    return os.time() * 1000
+-- Convert game data to JSON format
+function M.toJson(data)
+    local json = require('cjson')  -- Assume 'cjson' library is available for JSON handling
+    return json.encode(data)
 end
 
---- Check if a given value is a valid address.
--- @param address string The address to check.
--- @return boolean True if valid, otherwise false.
-function helpers.isValidAddress(address)
-    return type(address) == 'string' and string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
+-- Convert JSON string back to Lua table
+function M.fromJson(jsonString)
+    local json = require('cjson')
+    return json.decode(jsonString)
 end
 
---- Format a number to a fixed decimal point.
--- @param number number The number to format.
--- @param decimals number The number of decimal places.
--- @return string The formatted number as a string.
-function helpers.formatNumber(number, decimals)
-    return string.format('%.*f', decimals, number)
+-- Validate player data structure
+function M.validatePlayerData(playerData)
+    -- Check required fields exist
+    local requiredFields = {'id', 'name', 'score', 'level'}
+    for _, field in ipairs(requiredFields) do
+        if not playerData[field] then
+            return false, field .. ' is missing'
+        end
+    end
+    return true
 end
 
---- Generate a random unique identifier for players.
--- @return string A random unique identifier.
-function helpers.generateUniqueId()
-    return 'uid_' .. tostring(math.random(100000, 999999)) .. '_' .. tostring(os.time())
+-- Calculate average score of players
+function M.calculateAverageScore(players)
+    local totalScore = 0
+    local playerCount = 0
+
+    for _, player in ipairs(players) do
+        if player.score then
+            totalScore = totalScore + player.score
+            playerCount = playerCount + 1
+        end
+    end
+
+    if playerCount == 0 then
+        return 0  -- Avoid division by zero
+    end
+    return totalScore / playerCount
 end
 
-return helpers
+return M

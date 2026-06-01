@@ -1,34 +1,42 @@
--- Logger module with rotation functionality
+-- Utility functions for web3 network operations
 
-local logger = {}
-local logFile = 'app.log'
-local maxFileSize = 1024 * 1024 * 5 -- 5 MB
+local http = require("socket.http")
+local ltn12 = require("ltn12")
 
--- Helper function to get file size
-local function getFileSize(filename)
-    local file = io.open(filename, 'r')
-    if not file then return 0 end
-    local size = file:seek('end')
-    file:close()
-    return size
-end
+--- Perform a network operation with retry logic
+-- @param url The URL for the network request
+-- @param max_retries Maximum number of retries
+-- @param delay Delay in seconds between retries
+-- @return Response body or nil on failure
+local function perform_request(url, max_retries, delay)
+    local response_body = {}
+    local attempts = 0
+    local success = false
 
--- Rotate log file if it exceeds max size
-local function rotateLogFile()
-    if getFileSize(logFile) >= maxFileSize then
-        local timestamp = os.date('%Y%m%d%H%M%S')
-        os.rename(logFile, logFile .. '.' .. timestamp)
+    while attempts < max_retries do
+        local res, code, response_headers, status = http.request({
+            url = url,
+            sink = ltn12.sink.table(response_body)
+        })
+
+        if code == 200 then
+            success = true
+            break
+        else
+            attempts = attempts + 1
+            print(string.format("Attempt %d failed: %s. Retrying in %d seconds...", attempts, status, delay))
+            os.execute("sleep " .. delay)
+        end
+    end
+
+    if success then
+        return table.concat(response_body)
+    else
+        print("All attempts failed.")
+        return nil
     end
 end
 
--- Logging function
-function logger.log(message)
-    rotateLogFile()
-    local file = io.open(logFile, 'a')
-    if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        file:close()
-    end
-end
-
-return logger
+return {
+    perform_request = perform_request
+}

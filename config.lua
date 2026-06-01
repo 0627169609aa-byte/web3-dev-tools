@@ -1,31 +1,42 @@
--- Configuration loader with defaults
+-- Configuration settings for web3-dev-tools
+local config = {}
 
-local Config = {}
-
--- Default configurations
-local defaultConfig = {
-    server = "localhost",
-    port = 8080,
-    maxPlayers = 100,
-    gameName = "MyAwesomeGame",
-    enableLogging = true
+-- Network settings
+config.network = {
+    host = 'localhost',
+    port = 8545,
+    protocol = 'http',
 }
 
--- Function to load configuration
-function Config.loadConfig(userConfig)
-    local finalConfig = {}
-    -- Merge user configuration with defaults
-    for key, value in pairs(defaultConfig) do
-        finalConfig[key] = userConfig[key] or value
+-- Game settings
+config.game = {
+    maxPlayers = 4,
+    gameWorld = 'default',
+}
+
+-- Input validation function
+local function validateInput(input)
+    if type(input) ~= 'table' then
+        return false, 'Input must be a table'
     end
-    return finalConfig
+    if not input.playerName or type(input.playerName) ~= 'string' then
+        return false, 'playerName is required and must be a string'
+    end
+    if not input.playerId or type(input.playerId) ~= 'string' then
+        return false, 'playerId is required and must be a string'
+    end
+    return true, ''
 end
 
--- Function to display current config
-function Config.displayConfig(config)
-    for key, value in pairs(config) do
-        print(key .. ": " .. tostring(value))
+-- Main processing loop
+function config.processInput(input)
+    local isValid, errorMsg = validateInput(input)
+    if not isValid then
+        error(errorMsg)
     end
+    -- Process the input if valid
+    print('Processing input for player:', input.playerName)
+    -- Additional processing logic would go here
 end
 
-return Config
+return config

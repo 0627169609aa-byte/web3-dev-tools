@@ -1,49 +1,36 @@
---[[]]
--- Helper functions for web3 gaming applications.
---
--- This module contains utility functions that assist in various game-related operations.
---
--- @module helpers
+-- Helper functions for web3 gaming operations
 
 local helpers = {}
 
---- Validates if a given string is a valid Ethereum address.
--- @param address string: The address string to validate.
--- @return boolean: True if valid, false otherwise.
-function helpers.isValidEthereumAddress(address)
-    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
+--- Convert a hex string to a decimal number
+-- @param hexString: string
+-- @return number
+function helpers.hexToDec(hexString)
+    return tonumber(hexString, 16)
 end
 
---- Generates a random hexadecimal string of a specified length.
--- @param length number: The length of the generated hexadecimal string.
--- @return string: A random hexadecimal string.
-function helpers.generateRandomHex(length)
-    local charPool = '0123456789abcdef'
-    local hexString = ''
-    for i = 1, length do
-        local randomIndex = math.random(#charPool)
-        hexString = hexString .. string.sub(charPool, randomIndex, randomIndex)
-    end
-    return hexString
+--- Check if a given address is valid
+-- @param address: string
+-- @return boolean
+function helpers.isValidAddress(address)
+    return string.match(address, '^0x%x+$') ~= nil and #address == 42
 end
 
---- Converts a numeric value to its hexadecimal representation.
--- @param number number: The number to convert.
--- @return string: The hexadecimal representation of the number.
-function helpers.toHex(number)
-    return string.format('0x%X', number)
+--- Delay execution for a given amount of time
+-- @param seconds: number
+-- @return nil
+function helpers.delay(seconds)
+    local start = os.clock()
+    while os.clock() - start < seconds do end
 end
 
---- Shuffles a table randomly.
--- @param tbl table: The table to shuffle.
--- @return table: The shuffled table.
-function helpers.shuffleTable(tbl)
+--- Generate a random number within a range
+-- @param min: number
+-- @param max: number
+-- @return number
+function helpers.randomInRange(min, max)
     math.randomseed(os.time())
-    for i = #tbl, 2, -1 do
-        local j = math.random(i)
-        tbl[i], tbl[j] = tbl[j], tbl[i]
-    end
-    return tbl
+    return math.random(min, max)
 end
 
 return helpers

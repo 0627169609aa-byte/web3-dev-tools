@@ -1,42 +1,29 @@
--- Configuration settings for web3-dev-tools
-local config = {}
+-- Configuration Loader for Web3 Gaming
 
--- Network settings
-config.network = {
-    host = 'localhost',
-    port = 8545,
-    protocol = 'http',
+local json = require('json')
+
+local defaults = {
+    network = 'mainnet',
+    gameId = 'defaultGame',
+    maxPlayers = 100,
+    enableRewards = true,
+    apiUrl = 'https://api.example.com'
 }
 
--- Game settings
-config.game = {
-    maxPlayers = 4,
-    gameWorld = 'default',
+local function loadConfig(filePath)
+    local file = io.open(filePath, 'r')
+    if not file then
+        return defaults  -- return defaults if file not found
+    end
+    local content = file:read('*a')
+    file:close()
+    local configData = json.decode(content)
+    if not configData then
+        return defaults  -- return defaults if JSON is invalid
+    end
+    return setmetatable(configData, { __index = defaults })  -- combine defaults with loaded config
+end
+
+return {
+    loadConfig = loadConfig
 }
-
--- Input validation function
-local function validateInput(input)
-    if type(input) ~= 'table' then
-        return false, 'Input must be a table'
-    end
-    if not input.playerName or type(input.playerName) ~= 'string' then
-        return false, 'playerName is required and must be a string'
-    end
-    if not input.playerId or type(input.playerId) ~= 'string' then
-        return false, 'playerId is required and must be a string'
-    end
-    return true, ''
-end
-
--- Main processing loop
-function config.processInput(input)
-    local isValid, errorMsg = validateInput(input)
-    if not isValid then
-        error(errorMsg)
-    end
-    -- Process the input if valid
-    print('Processing input for player:', input.playerName)
-    -- Additional processing logic would go here
-end
-
-return config

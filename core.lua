@@ -1,44 +1,38 @@
--- Logger setup with rotation in Lua
+-- Core functionality for game interactions
 
-local lfs = require('lfs')
+local Game = {}
 
-local Logger = {}
-Logger.__index = Logger
-
-function Logger:new(log_dir, max_size, rotation_count)
-    local obj = setmetatable({}, self)
-    obj.log_dir = log_dir
-    obj.max_size = max_size or 1024 * 1024 -- Default 1 MB
-    obj.rotation_count = rotation_count or 5
-    obj.current_log = log_dir .. '/app.log'
-    return obj
+-- Initializes the game with default settings
+function Game:new(name, maxPlayers)
+    local newGame = {}
+    setmetatable(newGame, self)
+    self.__index = self
+    newGame.name = name or "Untitled Game"
+    newGame.maxPlayers = maxPlayers or 4
+    newGame.players = {}
+    return newGame
 end
 
-function Logger:log(message)
-    local log_file = io.open(self.current_log, 'a')
-    if log_file then
-        log_file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        log_file:close()
-        self:check_rotation()
+-- Adds a player to the game
+function Game:addPlayer(player)
+    if #self.players < self.maxPlayers then
+        table.insert(self.players, player)
+    else
+        error("Cannot add more players than max limit.")
     end
 end
 
-function Logger:check_rotation()
-    local file_size = lfs.attributes(self.current_log, 'size')
-    if file_size and file_size >= self.max_size then
-        self:rotate_logs()
+-- Starts the game
+function Game:start()
+    if #self.players < 2 then
+        error("Not enough players to start the game.")
     end
+    print(self.name .. " has started with " .. #self.players .. " players.")
 end
 
-function Logger:rotate_logs()
-    for i = self.rotation_count, 1, -1 do
-        local old_log = self.log_dir .. '/app.log.' .. i
-        local new_log = self.log_dir .. '/app.log.' .. (i + 1)
-        if lfs.attributes(old_log) then
-            os.rename(old_log, new_log)
-        end
-    end
-    os.rename(self.current_log, self.log_dir .. '/app.log.1')
+-- Provides game details
+function Game:getDetails()
+    return string.format("Game: %s, Players: %d/%d", self.name, #self.players, self.maxPlayers)
 end
 
-return Logger
+return Game

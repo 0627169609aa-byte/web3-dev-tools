@@ -1,42 +1,47 @@
--- Utility functions for web3 gaming
+--[[
+    Utility functions for web3 gaming tools.
+    This module provides helper functions for various common tasks.
+]]
 
-local utils = {}
+---
 
--- Converts a string to a number safely
-function utils.safeStringToNumber(value)
-    if type(value) ~= "string" then
-        return nil, "Value is not a string"
+---
+--@param str string: The input string to capitalize.
+--@return string: The capitalized string.
+function capitalize(str)
+    return str:sub(1, 1):upper() .. str:sub(2)
+end
+
+---
+--@param table1 table: The first table to merge.
+--@param table2 table: The second table to merge.
+--@return table: A new table combining table1 and table2.
+function mergeTables(table1, table2)
+    local mergedTable = {}
+    for k, v in pairs(table1) do
+        mergedTable[k] = v
     end
-    local num = tonumber(value)
-    return num, num ~= nil and nil or "Conversion failed"
-end
-
--- Checks if a table is empty
-function utils.isTableEmpty(tbl)
-    return next(tbl) == nil
-end
-
--- Deep copies a table
-function utils.deepCopy(orig)
-    local orig_type = type(orig)
-    local copy
-
-    if orig_type == "table" then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[utils.deepCopy(orig_key)] = utils.deepCopy(orig_value)
-        end
-        setmetatable(copy, utils.deepCopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
+    for k, v in pairs(table2) do
+        mergedTable[k] = v
     end
-    return copy
+    return mergedTable
 end
 
--- Formats a timestamp into a readable date
-function utils.formatTimestamp(timestamp)
-    local date = os.date("!*t", timestamp)
-    return string.format("%04d-%02d-%02d %02d:%02d:%02d", date.year, date.month, date.day, date.hour, date.min, date.sec)
+---
+--@param list table: A table containing items.
+--@return table: A new table with the items shuffled.
+function shuffleList(list)
+    local shuffledList = {}
+    for i = #list, 1, -1 do
+        local randIndex = math.random(1, i)
+        list[i], list[randIndex] = list[randIndex], list[i]
+    end
+    return list
 end
 
-return utils
+---
+--@param value any: The value to verify.
+--@return boolean: True if value is a number, false otherwise.
+function isNumber(value)
+    return type(value) == 'number'
+end

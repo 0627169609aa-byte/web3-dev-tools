@@ -1,38 +1,44 @@
--- Core functionality for game interactions
+-- Logger Setup with Rotation
 
-local Game = {}
+local socket = require('socket')
+local lfs = require('lfs')
 
--- Initializes the game with default settings
-function Game:new(name, maxPlayers)
-    local newGame = {}
-    setmetatable(newGame, self)
-    self.__index = self
-    newGame.name = name or "Untitled Game"
-    newGame.maxPlayers = maxPlayers or 4
-    newGame.players = {}
-    return newGame
+local Logger = {}
+Logger.__index = Logger
+
+function Logger:new(logFile, maxSize, backupCount)
+    local logger = setmetatable({}, self)
+    logger.logFile = logFile or 'app.log'
+    logger.maxSize = maxSize or 10 * 1024 * 1024  -- 10 MB
+    logger.backupCount = backupCount or 5
+    return logger
 end
 
--- Adds a player to the game
-function Game:addPlayer(player)
-    if #self.players < self.maxPlayers then
-        table.insert(self.players, player)
-    else
-        error("Cannot add more players than max limit.")
+function Logger:log(message)
+    local file = io.open(self.logFile, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+        self:checkRotation()
     end
 end
 
--- Starts the game
-function Game:start()
-    if #self.players < 2 then
-        error("Not enough players to start the game.")
+function Logger:checkRotation()
+    local fileAttr = lfs.attributes(self.logFile)
+    if fileAttr and fileAttr.size >= self.maxSize then
+        self:rotateLogs()
     end
-    print(self.name .. " has started with " .. #self.players .. " players.")
 end
 
--- Provides game details
-function Game:getDetails()
-    return string.format("Game: %s, Players: %d/%d", self.name, #self.players, self.maxPlayers)
+function Logger:rotateLogs()
+    for i = self.backupCount, 1, -1 do
+        local oldFile = self.logFile .. '.' .. i
+        local newFile = self.logFile .. '.' .. (i + 1)
+        if lfs.attributes(oldFile) then
+            os.rename(oldFile, newFile)
+        end
+    end
+    os.rename(self.logFile, self.logFile .. '.1')
 end
 
-return Game
+return Logger

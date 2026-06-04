@@ -1,29 +1,36 @@
--- Configuration Loader for Web3 Gaming
+-- Configuration Settings for Web3 Gaming
 
-local json = require('json')
+local Config = {}
 
-local defaults = {
-    network = 'mainnet',
-    gameId = 'defaultGame',
-    maxPlayers = 100,
-    enableRewards = true,
-    apiUrl = 'https://api.example.com'
-}
-
+-- Function to load configuration from a file
 local function loadConfig(filePath)
-    local file = io.open(filePath, 'r')
+    local file, err = io.open(filePath, 'r')
     if not file then
-        return defaults  -- return defaults if file not found
+        error('Could not open configuration file: ' .. err)
     end
     local content = file:read('*a')
     file:close()
-    local configData = json.decode(content)
-    if not configData then
-        return defaults  -- return defaults if JSON is invalid
-    end
-    return setmetatable(configData, { __index = defaults })  -- combine defaults with loaded config
+    return content
 end
 
-return {
-    loadConfig = loadConfig
-}
+-- Function to parse configuration
+local function parseConfig(content)
+    local success, result = pcall(function()
+        return loadstring(content)()
+    end)
+    if not success then
+        error('Error parsing configuration: ' .. result)
+    end
+    return result
+end
+
+-- Load the configuration if the path is provided
+function Config.load(filePath)
+    if not filePath then
+        error('File path must be provided')
+    end
+    local content = loadConfig(filePath)
+    return parseConfig(content)
+end
+
+return Config

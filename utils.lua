@@ -1,47 +1,28 @@
---[[
-    Utility functions for web3 gaming tools.
-    This module provides helper functions for various common tasks.
-]]
+-- Utility functions for web3 gaming
 
----
-
----
---@param str string: The input string to capitalize.
---@return string: The capitalized string.
-function capitalize(str)
-    return str:sub(1, 1):upper() .. str:sub(2)
+local function isValidAddress(address)
+    return type(address) == 'string' and address:match('^0x[a-fA-F0-9]{40}$')
 end
 
----
---@param table1 table: The first table to merge.
---@param table2 table: The second table to merge.
---@return table: A new table combining table1 and table2.
-function mergeTables(table1, table2)
-    local mergedTable = {}
-    for k, v in pairs(table1) do
-        mergedTable[k] = v
+local function handleError(errMsg)
+    print('Error: ' .. errMsg)
+    return { success = false, message = errMsg }
+end
+
+local function processTransaction(address, amount)
+    if not isValidAddress(address) then
+        return handleError('Invalid Ethereum address provided.')
     end
-    for k, v in pairs(table2) do
-        mergedTable[k] = v
+    if type(amount) ~= 'number' or amount <= 0 then
+        return handleError('Amount must be a positive number.')
     end
-    return mergedTable
+    -- Simulated transaction processing
+    print('Processing transaction...')
+    return { success = true, message = 'Transaction successful.', address = address, amount = amount }
 end
 
----
---@param list table: A table containing items.
---@return table: A new table with the items shuffled.
-function shuffleList(list)
-    local shuffledList = {}
-    for i = #list, 1, -1 do
-        local randIndex = math.random(1, i)
-        list[i], list[randIndex] = list[randIndex], list[i]
-    end
-    return list
-end
-
----
---@param value any: The value to verify.
---@return boolean: True if value is a number, false otherwise.
-function isNumber(value)
-    return type(value) == 'number'
-end
+return {
+    isValidAddress = isValidAddress,
+    handleError = handleError,
+    processTransaction = processTransaction,
+}

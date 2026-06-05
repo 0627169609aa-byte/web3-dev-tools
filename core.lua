@@ -1,44 +1,36 @@
--- Logger Setup with Rotation
-
-local socket = require('socket')
-local lfs = require('lfs')
-
-local Logger = {}
-Logger.__index = Logger
-
-function Logger:new(logFile, maxSize, backupCount)
-    local logger = setmetatable({}, self)
-    logger.logFile = logFile or 'app.log'
-    logger.maxSize = maxSize or 10 * 1024 * 1024  -- 10 MB
-    logger.backupCount = backupCount or 5
-    return logger
-end
-
-function Logger:log(message)
-    local file = io.open(self.logFile, 'a')
-    if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        file:close()
-        self:checkRotation()
-    end
-end
-
-function Logger:checkRotation()
-    local fileAttr = lfs.attributes(self.logFile)
-    if fileAttr and fileAttr.size >= self.maxSize then
-        self:rotateLogs()
-    end
-end
-
-function Logger:rotateLogs()
-    for i = self.backupCount, 1, -1 do
-        local oldFile = self.logFile .. '.' .. i
-        local newFile = self.logFile .. '.' .. (i + 1)
-        if lfs.attributes(oldFile) then
-            os.rename(oldFile, newFile)
+-- Helper function to calculate the player's score
+local function calculateScore(actions)
+    local totalScore = 0
+    for _, action in ipairs(actions) do
+        if action.type == "win" then
+            totalScore = totalScore + 10
+        elseif action.type == "lose" then
+            totalScore = totalScore - 5
+        elseif action.type == "draw" then
+            totalScore = totalScore + 1
         end
     end
-    os.rename(self.logFile, self.logFile .. '.1')
+    return totalScore
 end
 
-return Logger
+-- Helper function to format player's display name
+local function formatDisplayName(playerName)
+    return playerName:upper() .. "_GAMER"
+end
+
+-- Helper function to check if a player is banned
+local function isPlayerBanned(playerId, bannedList)
+    for _, bannedId in ipairs(bannedList) do
+        if playerId == bannedId then
+            return true
+        end
+    end
+    return false
+end
+
+-- Exporting functions for external use
+return {
+    calculateScore = calculateScore,
+    formatDisplayName = formatDisplayName,
+    isPlayerBanned = isPlayerBanned
+}

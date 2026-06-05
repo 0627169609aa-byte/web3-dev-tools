@@ -1,41 +1,39 @@
---[[
-    Helper functions for web3 gaming utilities.
-    @module helpers
-]]
+-- Helper functions for common operations
 
 local helpers = {}
 
---- 
--- Calculates the distance between two points in a 2D space.
--- @param x1 number: x-coordinate of the first point
--- @param y1 number: y-coordinate of the first point
--- @param x2 number: x-coordinate of the second point
--- @param y2 number: y-coordinate of the second point
--- @return number: The distance between the two points
-function helpers.calculateDistance(x1, y1, x2, y2)
-    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+-- Function to generate a random number within a range
+function helpers.random(min, max)
+    math.randomseed(os.time())
+    return math.random(min, max)
 end
 
---- 
--- Generates a random integer within a given range.
--- @param low number: The lower bound of the random integer
--- @param high number: The upper bound of the random integer
--- @return number: A random integer between low and high
-function helpers.randomInt(low, high)
-    return math.random(low, high)
+-- Function to convert a hexadecimal string to a decimal number
+function helpers.hexToDecimal(hex)
+    return tonumber(hex, 16)
 end
 
---- 
--- Converts a hexadecimal color value to an RGB table.
--- @param hex string: A hexadecimal color string (e.g. "#FF5733")
--- @return table: A table containing the R, G, B values
-function helpers.hexToRGB(hex)
-    hex = hex:gsub('#', '')
-    return {
-        r = tonumber('0x' .. hex:sub(1, 2)),
-        g = tonumber('0x' .. hex:sub(3, 4)),
-        b = tonumber('0x' .. hex:sub(5, 6))
-    }
+-- Function to convert a decimal number to a hexadecimal string
+function helpers.decimalToHex(decimal)
+    return string.format("%X", decimal)
+end
+
+-- Function to check if a table contains a specific value
+function helpers.tableContains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
+-- Function to merge two tables
+function helpers.mergeTables(table1, table2)
+    for k, v in pairs(table2) do
+        table1[k] = v
+    end
+    return table1
 end
 
 return helpers

@@ -1,37 +1,48 @@
--- Initialize game settings
-local function initializeGameSettings()
-    return {
-        playerName = "Player1",
-        maxPlayers = 4,
-        gameSpeed = 1.0
-    }
+--[[
+    Initializes the web3-dev-tools gaming environment.
+    Contains setup functions and configuration loading.
+]]
+
+local config = require('config')
+
+--- Sets up the gaming environment with initial configurations.
+-- @return boolean - returns true if setup is successful
+local function setupEnvironment()
+    local success, err = pcall(function()
+        -- Initialize game settings
+        local settings = config.loadSettings()
+        -- Perform necessary startup operations
+        print('Game settings loaded:', settings)
+    end)
+
+    if not success then
+        print('Error during setup:', err)
+        return false
+    end
+
+    return true
 end
 
--- Validate input settings
-local function validateSettings(settings)
-    if type(settings.playerName) ~= "string" or settings.playerName == "" then
-        error("Invalid player name. It must be a non-empty string.")
-    end
-    if type(settings.maxPlayers) ~= "number" or settings.maxPlayers < 1 then
-        error("Invalid max players. It must be a number greater than 0.")
-    end
-    if type(settings.gameSpeed) ~= "number" or settings.gameSpeed <= 0 then
-        error("Invalid game speed. It must be a number greater than 0.")
-    end
-end
-
--- Main processing loop
-local function main()
-    local gameSettings = initializeGameSettings()
-    validateSettings(gameSettings)  
-
-    -- Game loop
+--- Starts the main loop of the game.
+-- @return void
+local function startGameLoop()
     while true do
-        print("Game running with settings:", gameSettings.playerName, gameSettings.maxPlayers, gameSettings.gameSpeed)
-        -- Simulated game processing...
-        os.execute("sleep 1") -- Simulate wait
+        -- Main game loop execution
+        print('Game looping...')
+        -- You can add game processing logic here
+        os.execute('sleep 1')  -- Simulate delay for the loop
     end
 end
 
--- Start the game
+--- Main function to launch the application.
+-- @return void
+local function main()
+    if setupEnvironment() then
+        print('Environment set up successfully. Starting game loop...')
+        startGameLoop()
+    else
+        print('Failed to set up environment. Exiting...')
+    end
+end
+
 main()

@@ -1,36 +1,40 @@
--- Helper function to calculate the player's score
-local function calculateScore(actions)
-    local totalScore = 0
-    for _, action in ipairs(actions) do
-        if action.type == "win" then
-            totalScore = totalScore + 10
-        elseif action.type == "lose" then
-            totalScore = totalScore - 5
-        elseif action.type == "draw" then
-            totalScore = totalScore + 1
-        end
+-- Main processing loop for game actions
+
+local function isValidInput(input)
+    if type(input) ~= 'table' then
+        return false, 'Input must be a table'
     end
-    return totalScore
-end
-
--- Helper function to format player's display name
-local function formatDisplayName(playerName)
-    return playerName:upper() .. "_GAMER"
-end
-
--- Helper function to check if a player is banned
-local function isPlayerBanned(playerId, bannedList)
-    for _, bannedId in ipairs(bannedList) do
-        if playerId == bannedId then
-            return true
-        end
+    if not input.action or type(input.action) ~= 'string' then
+        return false, 'Action is required and must be a string'
     end
-    return false
+    return true
 end
 
--- Exporting functions for external use
-return {
-    calculateScore = calculateScore,
-    formatDisplayName = formatDisplayName,
-    isPlayerBanned = isPlayerBanned
-}
+local function processGameAction(input)
+    local valid, err = isValidInput(input)
+    if not valid then
+        print('Error: ' .. err)
+        return
+    end
+
+    -- Process the action based on the valid input
+    if input.action == 'move' then
+        print('Moving character to coordinates: ', input.x, input.y)
+        -- Logic to move character
+    elseif input.action == 'attack' then
+        print('Character attacking target: ', input.target)
+        -- Logic to attack
+    else
+        print('Unknown action: ' .. input.action)
+    end
+end
+
+-- Example main loop
+for _, input in ipairs({
+    { action = 'move', x = 5, y = 10 },
+    { action = 'attack', target = 'enemy1' },
+    { action = 'jump' },
+    { action = 123 }
+}) do
+    processGameAction(input)
+end

@@ -1,40 +1,48 @@
--- Main processing loop for game actions
+-- Function to handle gaming data
 
-local function isValidInput(input)
-    if type(input) ~= 'table' then
-        return false, 'Input must be a table'
+local GameDataHandler = {}
+
+-- Function to calculate average score from a list of scores
+function GameDataHandler.calculateAverageScore(scores)
+    if #scores == 0 then
+        return 0
     end
-    if not input.action or type(input.action) ~= 'string' then
-        return false, 'Action is required and must be a string'
+    local total = 0
+    for _, score in ipairs(scores) do
+        total = total + score
     end
-    return true
+    return total / #scores
 end
 
-local function processGameAction(input)
-    local valid, err = isValidInput(input)
-    if not valid then
-        print('Error: ' .. err)
-        return
+-- Function to get the highest score
+function GameDataHandler.getHighestScore(scores)
+    local highest = -math.huge
+    for _, score in ipairs(scores) do
+        if score > highest then
+            highest = score
+        end
     end
-
-    -- Process the action based on the valid input
-    if input.action == 'move' then
-        print('Moving character to coordinates: ', input.x, input.y)
-        -- Logic to move character
-    elseif input.action == 'attack' then
-        print('Character attacking target: ', input.target)
-        -- Logic to attack
-    else
-        print('Unknown action: ' .. input.action)
-    end
+    return highest
 end
 
--- Example main loop
-for _, input in ipairs({
-    { action = 'move', x = 5, y = 10 },
-    { action = 'attack', target = 'enemy1' },
-    { action = 'jump' },
-    { action = 123 }
-}) do
-    processGameAction(input)
+-- Function to get the lowest score
+function GameDataHandler.getLowestScore(scores)
+    local lowest = math.huge
+    for _, score in ipairs(scores) do
+        if score < lowest then
+            lowest = score
+        end
+    end
+    return lowest
 end
+
+-- Function to format scores for display
+function GameDataHandler.formatScores(scores)
+    local formattedScores = {}
+    for _, score in ipairs(scores) do
+        table.insert(formattedScores, string.format("Score: %d", score))
+    end
+    return formattedScores
+end
+
+return GameDataHandler

@@ -1,36 +1,32 @@
--- Configuration Settings for Web3 Gaming
+-- Configuration settings for the web3 game
 
 local Config = {}
 
--- Function to load configuration from a file
-local function loadConfig(filePath)
-    local file, err = io.open(filePath, 'r')
-    if not file then
-        error('Could not open configuration file: ' .. err)
-    end
-    local content = file:read('*a')
-    file:close()
-    return content
-end
+-- Blockchain network settings
+Config.network = {
+    name = "mainnet",
+    rpcUrl = "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+    chainId = 1,
+}
 
--- Function to parse configuration
-local function parseConfig(content)
-    local success, result = pcall(function()
-        return loadstring(content)()
-    end)
-    if not success then
-        error('Error parsing configuration: ' .. result)
-    end
-    return result
-end
+-- Game settings
+Config.game = {
+    name = "MyWeb3Game",
+    version = "1.0.0",
+    maxPlayers = 100,
+    startingCoins = 1000,
+}
 
--- Load the configuration if the path is provided
-function Config.load(filePath)
-    if not filePath then
-        error('File path must be provided')
-    end
-    local content = loadConfig(filePath)
-    return parseConfig(content)
+-- API settings
+Config.api = {
+    endpoint = "https://api.myweb3game.com",
+    timeout = 5000,  -- Timeout in milliseconds
+}
+
+-- Function to load the configuration
+function Config.load()  
+    -- Here you can add code to load config from a file if needed
+    return Config
 end
 
 return Config

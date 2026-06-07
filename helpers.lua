@@ -1,39 +1,55 @@
--- Helper functions for common operations
+-- Utility functions for gaming data handling
 
-local helpers = {}
+local M = {}
 
--- Function to generate a random number within a range
-function helpers.random(min, max)
-    math.randomseed(os.time())
-    return math.random(min, max)
+-- Function to convert a table of player data into a JSON string
+local function tableToJson(data)
+    local json = require('json')
+    return json.encode(data)
 end
 
--- Function to convert a hexadecimal string to a decimal number
-function helpers.hexToDecimal(hex)
-    return tonumber(hex, 16)
-end
+-- Function to calculate average score from player scores
+function M.calculateAverageScore(scores)
+    local total = 0
+    local count = #scores
 
--- Function to convert a decimal number to a hexadecimal string
-function helpers.decimalToHex(decimal)
-    return string.format("%X", decimal)
-end
-
--- Function to check if a table contains a specific value
-function helpers.tableContains(table, value)
-    for _, v in ipairs(table) do
-        if v == value then
-            return true
-        end
+    for _, score in ipairs(scores) do
+        total = total + score
     end
-    return false
+
+    return count > 0 and total / count or 0
 end
 
--- Function to merge two tables
-function helpers.mergeTables(table1, table2)
-    for k, v in pairs(table2) do
-        table1[k] = v
+-- Function to get player rankings based on scores
+function M.getPlayerRankings(players)
+    table.sort(players, function(a, b)
+        return a.score > b.score
+    end)
+    return players
+end
+
+-- Function to get a player's total play time
+function M.calculateTotalPlayTime(playTimes)
+    local total = 0
+
+    for _, time in ipairs(playTimes) do
+        total = total + time
     end
-    return table1
+
+    return total
 end
 
-return helpers
+-- Function to format gaming data for saving
+function M.formatGamingData(players)
+    local formattedData = {}
+    for _, player in ipairs(players) do
+        table.insert(formattedData, {
+            name = player.name,
+            score = player.score,
+            playTime = player.playTime
+        })
+    end
+    return tableToJson(formattedData)
+end
+
+return M

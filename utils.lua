@@ -1,28 +1,50 @@
--- Utility functions for web3 gaming
+-- Utility functions for gaming data handling
 
-local function isValidAddress(address)
-    return type(address) == 'string' and address:match('^0x[a-fA-F0-9]{40}$')
-end
+local json = require('json')
 
-local function handleError(errMsg)
-    print('Error: ' .. errMsg)
-    return { success = false, message = errMsg }
-end
+local M = {}
 
-local function processTransaction(address, amount)
-    if not isValidAddress(address) then
-        return handleError('Invalid Ethereum address provided.')
+-- Parse JSON data and return Lua table
+function M.parseJSON(data)
+    local success, result = pcall(json.decode, data)
+    if not success then
+        error('Failed to parse JSON: ' .. result)
     end
-    if type(amount) ~= 'number' or amount <= 0 then
-        return handleError('Amount must be a positive number.')
-    end
-    -- Simulated transaction processing
-    print('Processing transaction...')
-    return { success = true, message = 'Transaction successful.', address = address, amount = amount }
+    return result
 end
 
-return {
-    isValidAddress = isValidAddress,
-    handleError = handleError,
-    processTransaction = processTransaction,
-}
+-- Convert Lua table to JSON string
+function M.toJSON(table)
+    local success, result = pcall(json.encode, table)
+    if not success then
+        error('Failed to convert table to JSON: ' .. result)
+    end
+    return result
+end
+
+-- Merge two tables
+function M.mergeTables(t1, t2)
+    local merged = {}
+    for k, v in pairs(t1) do
+        merged[k] = v
+    end
+    for k, v in pairs(t2) do
+        merged[k] = v
+    end
+    return merged
+end
+
+-- Get player score from game data
+function M.getPlayerScore(gameData, playerId)
+    return gameData.players[playerId] and gameData.players[playerId].score or 0
+end
+
+-- Set player score in game data
+function M.setPlayerScore(gameData, playerId, score)
+    if not gameData.players[playerId] then
+        gameData.players[playerId] = { score = 0 }
+    end
+    gameData.players[playerId].score = score
+end
+
+return M

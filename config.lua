@@ -1,32 +1,44 @@
--- Configuration settings for the web3 game
+-- Configuration Loader Module
+
+local json = require('dkjson')
 
 local Config = {}
 
--- Blockchain network settings
-Config.network = {
-    name = "mainnet",
-    rpcUrl = "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID",
-    chainId = 1,
+-- Default configuration values
+local defaults = {
+    server = {
+        host = 'localhost',
+        port = 8080
+    },
+    database = {
+        user = 'root',
+        password = '',
+        name = 'mydb'
+    },
+    logging = {
+        level = 'info'
+    }
 }
 
--- Game settings
-Config.game = {
-    name = "MyWeb3Game",
-    version = "1.0.0",
-    maxPlayers = 100,
-    startingCoins = 1000,
-}
+-- Function to load configuration from a file
+function Config.loadConfig(filename)
+    local file = io.open(filename, 'r')
+    if not file then
+        print('No configuration file found, using defaults.')
+        return defaults
+    end
 
--- API settings
-Config.api = {
-    endpoint = "https://api.myweb3game.com",
-    timeout = 5000,  -- Timeout in milliseconds
-}
+    local content = file:read('*all')
+    file:close()
 
--- Function to load the configuration
-function Config.load()  
-    -- Here you can add code to load config from a file if needed
-    return Config
+    local config, pos, err = json.decode(content, 1, nil)
+    if err then
+        print('Error parsing configuration: ' .. err)
+        return defaults
+    end
+
+    return setmetatable(config or {}, {__index = defaults})
 end
 
+-- Export the Config module
 return Config

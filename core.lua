@@ -1,48 +1,37 @@
--- Function to handle gaming data
+-- Core module for web3 game logic
+local Game = {}
 
-local GameDataHandler = {}
-
--- Function to calculate average score from a list of scores
-function GameDataHandler.calculateAverageScore(scores)
-    if #scores == 0 then
-        return 0
-    end
-    local total = 0
-    for _, score in ipairs(scores) do
-        total = total + score
-    end
-    return total / #scores
+-- Initialize a new game instance
+function Game:new(name, players)
+    local newObj = {name = name, players = players or {}, rounds = {}}
+    self.__index = self
+    return setmetatable(newObj, self)
 end
 
--- Function to get the highest score
-function GameDataHandler.getHighestScore(scores)
-    local highest = -math.huge
-    for _, score in ipairs(scores) do
-        if score > highest then
-            highest = score
-        end
-    end
-    return highest
+-- Start a new round in the game
+function Game:startRound()
+    local round = {scoreboard = {}}
+    table.insert(self.rounds, round)
+    return round
 end
 
--- Function to get the lowest score
-function GameDataHandler.getLowestScore(scores)
-    local lowest = math.huge
-    for _, score in ipairs(scores) do
-        if score < lowest then
-            lowest = score
-        end
+-- Add a score for a player in the current round
+function Game:addScore(player, score)
+    local currentRound = self.rounds[#self.rounds]
+    if currentRound then
+        currentRound.scoreboard[player] = (currentRound.scoreboard[player] or 0) + score
     end
-    return lowest
 end
 
--- Function to format scores for display
-function GameDataHandler.formatScores(scores)
-    local formattedScores = {}
-    for _, score in ipairs(scores) do
-        table.insert(formattedScores, string.format("Score: %d", score))
-    end
-    return formattedScores
+-- Get the current scoreboard
+function Game:getScoreboard()
+    local currentRound = self.rounds[#self.rounds]
+    return currentRound and currentRound.scoreboard or {}
 end
 
-return GameDataHandler
+-- Get the game name
+function Game:getName()
+    return self.name
+end
+
+return Game

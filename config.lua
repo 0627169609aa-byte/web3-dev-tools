@@ -1,44 +1,32 @@
--- Configuration Loader Module
+-- Configuration settings for the game
+-- Uses Lua tables for easy referencing
 
-local json = require('dkjson')
+local config = {}
 
-local Config = {}
-
--- Default configuration values
-local defaults = {
-    server = {
-        host = 'localhost',
-        port = 8080
-    },
-    database = {
-        user = 'root',
-        password = '',
-        name = 'mydb'
-    },
-    logging = {
-        level = 'info'
-    }
-}
-
--- Function to load configuration from a file
-function Config.loadConfig(filename)
-    local file = io.open(filename, 'r')
-    if not file then
-        print('No configuration file found, using defaults.')
-        return defaults
-    end
-
-    local content = file:read('*all')
-    file:close()
-
-    local config, pos, err = json.decode(content, 1, nil)
-    if err then
-        print('Error parsing configuration: ' .. err)
-        return defaults
-    end
-
-    return setmetatable(config or {}, {__index = defaults})
+--- Gets the value from the configuration
+-- @param key string: The key to retrieve from the config
+-- @return mixed: The value associated with the key
+function config.get(key)
+    return config[key] or nil
 end
 
--- Export the Config module
-return Config
+--- Sets the value in the configuration
+-- @param key string: The key to set in the config
+-- @param value mixed: The value to assign to the key
+function config.set(key, value)
+    config[key] = value
+end
+
+--- Load default configuration settings
+function config.loadDefaults()
+    config['gameTitle'] = 'My Awesome Game'
+    config['maxPlayers'] = 100
+    config['defaultMap'] = 'StartingZone'
+end
+
+--- Initialize the configuration settings
+function config.init()
+    config.loadDefaults()
+end
+
+return config

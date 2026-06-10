@@ -1,41 +1,47 @@
--- Optimize performance for frequent game operations
+-- Utility functions for common operations
 
-local performanceUtil = {}
+local utils = {}
 
---- Measure execution time of a function
----@param func function: The function to measure
----@return number: Time taken in seconds
-function performanceUtil.measureExecutionTime(func)
-    local startTime = os.clock()
-    func()
-    local endTime = os.clock()
-    return endTime - startTime
+-- Generate a random number within a range
+function utils.randomRange(min, max)
+    return math.random(min, max)
 end
 
---- Efficiently process large data arrays
----@param data table: Input array of data
----@param processFunc function: Function to process each element
----@return table: New array with processed data
-function performanceUtil.processLargeArray(data, processFunc)
-    local result = {}
-    -- Preserve memory and optimize processing with pre-allocation
-    for i = 1, #data do
-        result[i] = processFunc(data[i])
-    end
-    return result
-end
-
---- Reduce overhead by caching results
----@param func function: Function to cache
----@return function: Cached version of the function
-function performanceUtil.cacheFunctionResults(func)
-    local cache = {}
-    return function(arg)
-        if not cache[arg] then
-            cache[arg] = func(arg)
+-- Check if a value is in a table
+function utils.contains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
         end
-        return cache[arg]
     end
+    return false
 end
 
-return performanceUtil
+-- Shuffle a table randomly
+function utils.shuffle(table)
+    local shuffled = {}
+    for i = 1, #table do
+        local randIndex = math.random(1, i)
+        shuffled[i] = shuffled[randIndex]
+        shuffled[randIndex] = table[i]
+    end
+    return shuffled
+end
+
+-- Deep copy a table
+function utils.deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[utils.deepcopy(orig_key)] = utils.deepcopy(orig_value)
+        end
+        setmetatable(copy, utils.deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+return utils

@@ -1,47 +1,31 @@
--- Utility functions for common operations
-
-local utils = {}
-
--- Generate a random number within a range
-function utils.randomRange(min, max)
-    return math.random(min, max)
+-- Function to validate player input
+local function validate_input(input)
+    if type(input) ~= 'string' then
+        return false, 'Input must be a string'
+    end
+    if #input == 0 then
+        return false, 'Input cannot be empty'
+    end
+    return true, ''
 end
 
--- Check if a value is in a table
-function utils.contains(table, value)
-    for _, v in ipairs(table) do
-        if v == value then
-            return true
+-- Main processing loop
+local function main_processing_loop()
+    while true do
+        local input = io.read()  -- Read input from the user
+        local is_valid, error_message = validate_input(input)
+        if not is_valid then
+            print('Error: ' .. error_message)  -- Print error message
+            goto continue
         end
+
+        -- Process the valid input
+        print('Processing: ' .. input)
+        -- Add more processing logic here as needed
+
+        ::continue::  -- Continue loop
     end
-    return false
 end
 
--- Shuffle a table randomly
-function utils.shuffle(table)
-    local shuffled = {}
-    for i = 1, #table do
-        local randIndex = math.random(1, i)
-        shuffled[i] = shuffled[randIndex]
-        shuffled[randIndex] = table[i]
-    end
-    return shuffled
-end
-
--- Deep copy a table
-function utils.deepcopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[utils.deepcopy(orig_key)] = utils.deepcopy(orig_value)
-        end
-        setmetatable(copy, utils.deepcopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
-return utils
+-- Execute the main loop
+main_processing_loop()

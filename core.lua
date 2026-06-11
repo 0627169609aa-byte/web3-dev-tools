@@ -1,37 +1,24 @@
--- Core module for web3 game logic
-local Game = {}
-
--- Initialize a new game instance
-function Game:new(name, players)
-    local newObj = {name = name, players = players or {}, rounds = {}}
-    self.__index = self
-    return setmetatable(newObj, self)
-end
-
--- Start a new round in the game
-function Game:startRound()
-    local round = {scoreboard = {}}
-    table.insert(self.rounds, round)
-    return round
-end
-
--- Add a score for a player in the current round
-function Game:addScore(player, score)
-    local currentRound = self.rounds[#self.rounds]
-    if currentRound then
-        currentRound.scoreboard[player] = (currentRound.scoreboard[player] or 0) + score
+-- Main processing loop for game
+local function processInput(userInput)
+    -- Input validation function
+    local function isValidInput(input)
+        return type(input) == 'string' and #input > 0
     end
+
+    -- Validate user input
+    if not isValidInput(userInput) then
+        print('Invalid input. Please enter a non-empty string.')
+        return
+    end
+
+    -- Process the valid input
+    print('Processing input: ' .. userInput)
+    -- (Add further processing logic here)
 end
 
--- Get the current scoreboard
-function Game:getScoreboard()
-    local currentRound = self.rounds[#self.rounds]
-    return currentRound and currentRound.scoreboard or {}
+-- Example usage
+while true do
+    print('Enter your command:')
+    local userInput = io.read()
+    processInput(userInput)
 end
-
--- Get the game name
-function Game:getName()
-    return self.name
-end
-
-return Game

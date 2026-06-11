@@ -1,47 +1,42 @@
 --[[
-    Web3 Gaming Core Module
-    This module contains the core functionality
-    for managing game state and player interactions.
---]]
+    Core module for web3-dev-tools.
+    This module handles essential functions for interacting with game-specific blockchain features.
+]]
 
-local GameCore = {}
-local players = {}
-local gameState = { active = false, turn = 1 }
+-- Types
+---@class BlockchainTransaction
+---@field from string
+---@field to string
+---@field amount number
+---@field timestamp number
 
---- Initializes the game settings
-function GameCore.initializeGame()
-    gameState.active = true
-    gameState.turn = 1
-    players = {}
-end
-
---- Adds a player to the game
--- @param name: the player's name
-function GameCore.addPlayer(name)
-    if not gameState.active then
-        error("Game is not active!")
+--- Initiates a blockchain transaction.
+--- @param transaction BlockchainTransaction The transaction to process.
+--- @return boolean success Indicates if the transaction was successful.
+function initiateTransaction(transaction)
+    if not transaction.from or not transaction.to or transaction.amount <= 0 then
+        return false
     end
-    table.insert(players, { name = name, score = 0 })
+
+    -- Simulate transaction processing
+    print(string.format("Processing transaction from %s to %s for %f coins", transaction.from, transaction.to, transaction.amount))
+    return true
 end
 
---- Advances the turn in the game
-function GameCore.nextTurn()
-    if not gameState.active then
-        error("Game is not active!")
-    end
-    gameState.turn = gameState.turn + 1
+--- Gets the current blockchain status.
+--- @return string status The status of the blockchain.
+function getBlockchainStatus()
+    -- Simulate retrieving status of the blockchain
+    local status = "Blockchain is operational."
+    return status
 end
 
---- Ends the current game
-function GameCore.endGame()
-    gameState.active = false
-    return players
+--- Retrieves user balance from the blockchain.
+--- @param userAddress string The address of the user.
+--- @return number balance The balance of the user in the blockchain.
+function getUserBalance(userAddress)
+    -- Simulate fetching user balance
+    local balance = math.random(1, 100)  -- Placeholder for actual balance retrieval
+    print(string.format("User balance for %s is %d", userAddress, balance))
+    return balance
 end
-
---- Gets the current game state
--- @return: current state of the game
-function GameCore.getGameState()
-    return gameState
-end
-
-return GameCore

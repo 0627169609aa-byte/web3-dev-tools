@@ -1,24 +1,47 @@
--- Main processing loop for game
-local function processInput(userInput)
-    -- Input validation function
-    local function isValidInput(input)
-        return type(input) == 'string' and #input > 0
-    end
+--[[
+    Web3 Gaming Core Module
+    This module contains the core functionality
+    for managing game state and player interactions.
+--]]
 
-    -- Validate user input
-    if not isValidInput(userInput) then
-        print('Invalid input. Please enter a non-empty string.')
-        return
-    end
+local GameCore = {}
+local players = {}
+local gameState = { active = false, turn = 1 }
 
-    -- Process the valid input
-    print('Processing input: ' .. userInput)
-    -- (Add further processing logic here)
+--- Initializes the game settings
+function GameCore.initializeGame()
+    gameState.active = true
+    gameState.turn = 1
+    players = {}
 end
 
--- Example usage
-while true do
-    print('Enter your command:')
-    local userInput = io.read()
-    processInput(userInput)
+--- Adds a player to the game
+-- @param name: the player's name
+function GameCore.addPlayer(name)
+    if not gameState.active then
+        error("Game is not active!")
+    end
+    table.insert(players, { name = name, score = 0 })
 end
+
+--- Advances the turn in the game
+function GameCore.nextTurn()
+    if not gameState.active then
+        error("Game is not active!")
+    end
+    gameState.turn = gameState.turn + 1
+end
+
+--- Ends the current game
+function GameCore.endGame()
+    gameState.active = false
+    return players
+end
+
+--- Gets the current game state
+-- @return: current state of the game
+function GameCore.getGameState()
+    return gameState
+end
+
+return GameCore

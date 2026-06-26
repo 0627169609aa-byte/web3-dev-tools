@@ -1,36 +1,46 @@
--- Utility functions for web3 gaming
+-- Utility functions for web3 gaming interactions
 
 local utils = {}
 
--- Check if a table is empty
-function utils.isEmpty(table)
-    return next(table) == nil
-end
-
--- Deep copy a table
-function utils.deepCopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[utils.deepCopy(orig_key)] = utils.deepCopy(orig_value)
-        end
-        setmetatable(copy, utils.deepCopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
+-- Check if a value is valid
+-- This can be a number or a string in specific formats
+-- @param value: the input value to be checked
+-- @return boolean: true if valid, false otherwise
+function utils.isValidValue(value)
+    if type(value) == 'number' then
+        return value > 0
+    elseif type(value) == 'string' then
+        return value ~= '' and value:match('^[A-Za-z0-9]+$')
     end
-    return copy
+    return false
 end
 
--- Generate a unique identifier
-function utils.generateUniqueId()
-    return tostring(math.random()):sub(3)..os.time() -- random + timestamp
+-- Safely divide two numbers, handling edge cases
+-- @param numerator: the top number in a division
+-- @param denominator: the bottom number in a division
+-- @return number: result of division or error message
+function utils.safeDivide(numerator, denominator)
+    if type(numerator) ~= 'number' or type(denominator) ~= 'number' then
+        return 'Error: both numerator and denominator must be numbers'
+    end
+    if denominator == 0 then
+        return 'Error: division by zero'
+    end
+    return numerator / denominator
 end
 
--- Format a number to currency
-function utils.formatCurrency(amount)
-    return string.format('$%.2f', amount)
+-- Retrieve a value from a table with error handling
+-- @param tbl: the table to retrieve from
+-- @param key: the key to look for
+-- @return value or error message
+function utils.getValueSafely(tbl, key)
+    if type(tbl) ~= 'table' then
+        return 'Error: provided input is not a table'
+    end
+    if tbl[key] == nil then
+        return 'Error: key does not exist in table'
+    end
+    return tbl[key]
 end
 
 return utils

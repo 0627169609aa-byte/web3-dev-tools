@@ -1,52 +1,33 @@
--- Logger module for rotating logs
-
-local log = require('log')
+-- Initialize logging setup with rotation
 local lfs = require('lfs')
+local log_filepath = 'logs/games_log.txt'
+local max_log_size = 5 * 1024 * 1024 -- 5 MB
 
-local Logger = {}
-Logger.__index = Logger
-
--- Logger constructor
-function Logger:new(logFilePath, maxLogSize, maxLogFiles)
-    local logger = setmetatable({}, Logger)
-    logger.logFilePath = logFilePath or 'app.log'
-    logger.maxLogSize = maxLogSize or 10 * 1024 * 1024  -- 10 MB
-    logger.maxLogFiles = maxLogFiles or 5
-    logger:fileCleanup()  -- Clean up old log files
-    return logger
-end
-
--- Function to log a message
-function Logger:log(message)
-    local file = io.open(self.logFilePath, 'a')
+local function rotate_logs()
+    local file = io.open(log_filepath, 'r')
     if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        local size = file:seek('end')
         file:close()
-    end
-    self:rotateLogs()
-end
 
--- Function to rotate logs
-function Logger:rotateLogs()
-    local fileAttr = lfs.attributes(self.logFilePath)
-    if fileAttr and fileAttr.size >= self.maxLogSize then
-        local oldFile = self.logFilePath .. '.' .. os.date('%Y%m%d_%H%M%S')
-        os.rename(self.logFilePath, oldFile)
-        self:fileCleanup()
-    end
-end
-
--- Function to clean up old log files
-function Logger:fileCleanup()
-    local count = 0
-    for file in lfs.dir('.') do
-        if file:match('^' .. self.logFilePath .. '%.%d+') then
-            count = count + 1
-            if count > self.maxLogFiles then
-                os.remove(file)
-            end
+        if size >= max_log_size then
+            os.rename(log_filepath, log_filepath .. '.' .. os.date('%Y%m%d%H%M%S'))
+            local new_log_file = io.open(log_filepath, 'w')
+            new_log_file:close()
         end
     end
 end
 
-return Logger
+local function log_message(message)
+    rotate_logs()
+    local file = io.open(log_filepath, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+    end
+end
+
+-- Example Usage
+log_message('Logger initialized')
+log_message('Game started')
+
+return { log = log_message }

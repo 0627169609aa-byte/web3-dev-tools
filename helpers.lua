@@ -1,32 +1,35 @@
---[[
-Utility functions for making network requests with retry logic in Lua.
-]]
+-- Logger setup with rotation
 
-local http = require('socket.http')
-local ltn12 = require('ltn12')
+local lfs = require('lfs')
+local logFilePath = 'logs/app.log'
+local maxFileSize = 10 * 1024 * 1024 -- 10 MB
+local backupCount = 5
 
-local function retryRequest(url, maxRetries, delay)
-    local attempts = 0
-    local response = {}  
-
-    while attempts < maxRetries do
-        local res, code, headers, status = http.request({
-            url = url,
-            sink = ltn12.sink.table(response)
-        })
-        
-        if code == 200 then
-            return table.concat(response), code  -- Return response and status code
-        else
-            attempts = attempts + 1
-            print(string.format('Attempt %d failed: %s. Retrying in %d seconds... ', attempts, status, delay))
-            os.execute('sleep ' .. delay)  -- Sleep before retry
+local function rotateLogFile()
+    if lfs.attributes(logFilePath, 'size') >= maxFileSize then
+        local backupFilePath = logFilePath .. '.' .. os.date('%Y%m%d%H%M%S')
+        os.rename(logFilePath, backupFilePath)
+        if lfs.attributes(backupFilePath) then
+            local fileCount = 0
+            for file in lfs.dir('logs') do
+                if file:match('^app.log%.%d+%d+%d+%d+%d+%d+$') then
+                    fileCount = fileCount + 1
+                    if fileCount > backupCount then
+                        os.remove('logs/' .. file)
+                    end
+                end
+            end
         end
     end
-    
-    return nil, 'Failed after ' .. maxRetries .. ' attempts'
 end
 
-return {
-    retryRequest = retryRequest
-}
+local function log(message)
+    rotateLogFile()
+    local file = io.open(logFilePath, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+    end
+end
+
+return { log = log }

@@ -1,42 +1,41 @@
---[[
-    Core module for web3-dev-tools.
-    This module handles essential functions for interacting with game-specific blockchain features.
-]]
+-- Network operation retry logic
 
--- Types
----@class BlockchainTransaction
----@field from string
----@field to string
----@field amount number
----@field timestamp number
+local http = require('socket.http')
+local ltn12 = require('ltn12')
 
---- Initiates a blockchain transaction.
---- @param transaction BlockchainTransaction The transaction to process.
---- @return boolean success Indicates if the transaction was successful.
-function initiateTransaction(transaction)
-    if not transaction.from or not transaction.to or transaction.amount <= 0 then
-        return false
+local MAX_RETRIES = 3
+local WAIT_TIME = 2  -- seconds
+
+local function retryOperation(operation, retries)
+    local attempts = 0
+    while attempts < retries do
+        local success, result = pcall(operation)
+        if success then
+            return result
+        end
+        attempts = attempts + 1
+        print(string.format('Attempt %d failed, retrying in %d seconds...', attempts, WAIT_TIME))
+        os.execute(string.format('sleep %d', WAIT_TIME))
     end
-
-    -- Simulate transaction processing
-    print(string.format("Processing transaction from %s to %s for %f coins", transaction.from, transaction.to, transaction.amount))
-    return true
+    error('All attempts to perform the operation failed.')
 end
 
---- Gets the current blockchain status.
---- @return string status The status of the blockchain.
-function getBlockchainStatus()
-    -- Simulate retrieving status of the blockchain
-    local status = "Blockchain is operational."
-    return status
+local function fetchData(url)
+    local response_body = {}
+    local res, code, response_headers, status = http.request {
+        url = url,
+        sink = ltn12.sink.table(response_body),
+    }
+    if code ~= 200 then
+        error('Failed to fetch data: ' .. tostring(code))
+    end
+    return table.concat(response_body)
 end
 
---- Retrieves user balance from the blockchain.
---- @param userAddress string The address of the user.
---- @return number balance The balance of the user in the blockchain.
-function getUserBalance(userAddress)
-    -- Simulate fetching user balance
-    local balance = math.random(1, 100)  -- Placeholder for actual balance retrieval
-    print(string.format("User balance for %s is %d", userAddress, balance))
-    return balance
+local function getDataWithRetry(url)
+    return retryOperation(function() return fetchData(url) end, MAX_RETRIES)
 end
+
+return {
+    getDataWithRetry = getDataWithRetry,
+}

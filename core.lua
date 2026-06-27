@@ -1,22 +1,43 @@
--- Main processing loop with input validation
+-- Core module to handle game state optimizations
 
-local function isValidInput(input)
-    return type(input) == 'string' and #input > 0
+local GameState = {}
+
+-- Initialize game state
+function GameState:new()
+    local instance = {
+        players = {},
+        map = {},
+        resources = {}
+    }
+    setmetatable(instance, self)
+    self.__index = self
+    return instance
 end
 
-local function processInput(input)
-    if not isValidInput(input) then
-        error('Invalid input: must be a non-empty string')
+-- Update player position efficiently
+function GameState:updatePlayerPosition(playerId, newPosition)
+    if self.players[playerId] then
+        self.players[playerId].position = newPosition
+    else
+        print("Player not found!")
     end
-    -- Process the validated input
-    print('Processing input: ' .. input)
 end
 
-local function main()
-    local inputs = {'valid string', '', nil}
-    for _, input in ipairs(inputs) do
-        pcall(processInput, input)
+-- Add or update resource in map
+function GameState:upsertResource(resourceId, resourceData)
+    self.resources[resourceId] = resourceData
+end
+
+-- Optimize resource fetching by caching
+function GameState:getResource(resourceId)
+    return self.resources[resourceId] or nil
+end
+
+-- Batch update players' states
+function GameState:batchUpdatePlayers(updates)
+    for playerId, newPosition in pairs(updates) do
+        self:updatePlayerPosition(playerId, newPosition)
     end
 end
 
-main()
+return GameState

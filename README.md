@@ -1,52 +1,54 @@
 # web3-dev-tools
 
-web3-dev-tools is a comprehensive toolkit designed to streamline the development of decentralized gaming applications using Lua. It provides essential utilities to manage blockchain interactions and simplify game mechanics, allowing developers to create immersive experiences seamlessly integrated with the web3 ecosystem.
+Web3-dev-tools is a Lua-based toolkit designed to simplify the development of blockchain gaming applications. It provides essential tools and libraries to streamline smart contract interactions, NFT management, and web3 integrations, allowing developers to focus more on gaming mechanics and user experience.
 
 ## Features
-- **Smart Contract Interaction**: Easily deploy and interact with Solidity smart contracts directly from Lua environments.
-- **Event Monitoring**: Utilize built-in listeners to track blockchain events and synchronize them with game state changes in real-time.
-- **User Wallet Integration**: Simplify wallet connectivity through support for MetaMask and other popular wallets, enhancing user experience.
-- **Secure Transactions**: Leverage advanced encryption methods to ensure secure in-game transactions and data integrity.
+
+- **Smart Contract Interaction**: Easily interact with Ethereum-based smart contracts using a straightforward Lua API, enabling seamless transaction handling for in-game economies.
+- **NFT Management**: Create, mint, and manage Non-Fungible Tokens (NFTs) tailored for gaming assets with built-in support for batch operations.
+- **User Wallet Integration**: Simplify user authentication and wallet connections with popular Web3 providers, enhancing player experience without compromising security.
+- **Cross-Platform Compatibility**: Designed to work across various platforms, including mobile and desktop, ensuring that your games reach a wider audience.
 
 ## Installation
 
-To get started with web3-dev-tools, you can install the library via LuaRocks with the following command:
+To get started with web3-dev-tools, follow these installation instructions:
 
-```bash
-luarocks install web3-dev-tools
-```
+1. Clone the repository:
 
-Ensure you have Lua and LuaRocks installed on your system. 
+    ```bash
+    git clone https://github.com/Developer/web3-dev-tools.git
+    ```
+
+2. Navigate to the project directory:
+
+    ```bash
+    cd web3-dev-tools
+    ```
+
+3. Install the required dependencies:
+
+    ```bash
+    luarocks install lua-web3
+    luarocks install lua-json
+    ```
 
 ## Basic Usage Example
 
-Here is a quick example to illustrate the basic usage of web3-dev-tools in your game project:
+Here’s a simple example that demonstrates how to use web3-dev-tools to mint an NFT:
 
 ```lua
-local web3 = require("web3-dev-tools")
+local web3 = require("web3")
+local nft_contract = web3.contract("0xYourNFTContractAddress")
 
--- Initialize the web3 client
-local client = web3:new({
-  provider = "https://your.ethereum.node",
-  privateKey = "YOUR_PRIVATE_KEY"
-})
+local function mintNFT(userAddress, tokenData)
+    local transaction = nft_contract.methods.mint(userAddress, tokenData)
+    local receipt = transaction:send({from = userAddress})
+    print("NFT Minted! Transaction Hash: " .. receipt.transactionHash)
+end
 
--- Deploy a smart contract
-local contractAddress = client:deployContract("MyGameContract", { initialValue = 100 })
-
--- Listen for events
-client:on("Transfer", function(event)
-  print("Transfer event detected: ", event)
-end)
-
--- Execute a transaction
-client:sendTransaction({
-  to = contractAddress,
-  value = web3.utils.toWei(1, "ether"),
-  data = client:encodeABI("transfer", { "0xRecipientAddress", 50 })
-})
+mintNFT("0xUserWalletAddress", "UniqueGameAssetData")
 ```
 
-For further documentation and examples, please refer to the [Wiki](https://github.com/Developer/web3-dev-tools/wiki).
+With web3-dev-tools, integrating blockchain technology into your gaming development workflow has never been easier!
 
-![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)

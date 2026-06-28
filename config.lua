@@ -1,32 +1,48 @@
--- Configuration settings for the game
--- Uses Lua tables for easy referencing
+-- Configuration Loader with Defaults
 
-local config = {}
+local json = require('dkjson') -- Use dkjson for JSON parsing
 
---- Gets the value from the configuration
--- @param key string: The key to retrieve from the config
--- @return mixed: The value associated with the key
-function config.get(key)
-    return config[key] or nil
+local Config = {}
+Config.defaultConfig = {
+    setting1 = "value1",
+    setting2 = true,
+    setting3 = 10,
+    nested = {
+        subSetting1 = "subValue1",
+        subSetting2 = false
+    }
+}
+
+function Config.loadConfig(filePath)
+    local file, err = io.open(filePath, "r")
+    if err then
+        print("Error opening config file: " .. err)
+        return Config.defaultConfig  -- Return defaults if file not found
+    end
+
+    local content = file:read("*a")
+    file:close()
+
+    local userConfig = json.decode(content)
+    if not userConfig then
+        print("Error parsing JSON, returning defaults")
+        return Config.defaultConfig
+    end
+
+    -- Merge defaults with user config
+    for key, value in pairs(Config.defaultConfig) do
+        if userConfig[key] == nil then
+            userConfig[key] = value
+        elseif type(value) == "table" and type(userConfig[key]) == "table" then
+            for subKey, subValue in pairs(value) do
+                if userConfig[key][subKey] == nil then
+                    userConfig[key][subKey] = subValue
+                end
+            end
+        end
+    end
+
+    return userConfig
 end
 
---- Sets the value in the configuration
--- @param key string: The key to set in the config
--- @param value mixed: The value to assign to the key
-function config.set(key, value)
-    config[key] = value
-end
-
---- Load default configuration settings
-function config.loadDefaults()
-    config['gameTitle'] = 'My Awesome Game'
-    config['maxPlayers'] = 100
-    config['defaultMap'] = 'StartingZone'
-end
-
---- Initialize the configuration settings
-function config.init()
-    config.loadDefaults()
-end
-
-return config
+return Config

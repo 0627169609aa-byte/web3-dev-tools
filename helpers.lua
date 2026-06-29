@@ -1,36 +1,35 @@
--- log rotation handler
-local lfs = require('lfs')
-local logger = {}
+-- Logger module with rotation setup
 
--- configuration
-logger.log_file = 'application.log'
-logger.max_size = 1048576 -- 1 MB
-logger.backup_count = 5
+local Logger = {}
+local logFilePath = 'app.log'
+local maxFileSize = 1024 * 1024 * 5 -- 5 MB
 
-function logger:log(message)
-    local file = io.open(self.log_file, 'a')
-    if not file then return end
-    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-    file:close()
-    self:check_rotation()
+local function getFileSize(filePath)
+    local file = io.open(filePath, 'r')
+    if file then
+        local size = file:seek('end')
+        file:close()
+        return size
+    end
+    return 0
 end
 
-function logger:check_rotation()
-    local file_size = lfs.attributes(self.log_file, 'size')
-    if file_size and file_size >= self.max_size then
-        self:rotate_logs()
+local function rotateLogFile()
+    if getFileSize(logFilePath) >= maxFileSize then
+        local rotatedFilePath = logFilePath .. '.' .. os.time()
+        os.rename(logFilePath, rotatedFilePath)
     end
 end
 
-function logger:rotate_logs()
-    for i = self.backup_count, 1, -1 do
-        local old_file = self.log_file .. '.' .. i
-        local new_file = self.log_file .. '.' .. (i + 1)
-        if lfs.attributes(old_file) then
-            os.rename(old_file, new_file)
-        end
+function Logger.log(message)
+    rotateLogFile()
+    local file = io.open(logFilePath, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+    else
+        error('Could not open log file for writing.')
     end
-    os.rename(self.log_file, self.log_file .. '.1')
 end
 
-return logger
+return Logger

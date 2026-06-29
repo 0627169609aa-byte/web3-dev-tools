@@ -1,54 +1,50 @@
--- Utility functions for web3 gaming
+-- Helper Functions for Common Operations
 
 ---
--- Converts a hex string to a decimal number
--- @param hexStr: The hexadecimal string to convert
--- @return: The decimal number representation of the hex string
+-- Convert a hexadecimal string to a number
+-- @param hexStr: String representing the hexadecimal number
+-- @return: Number representation of the hexadecimal
 ---
-function hexToDecimal(hexStr)
+local function hexToNumber(hexStr)
     return tonumber(hexStr, 16)
 end
 
 ---
--- Validates if a given address is a valid Ethereum address
--- @param address: The Ethereum address to validate
--- @return: True if valid, false otherwise
+-- Convert a number to a hexadecimal string
+-- @param num: Number to convert to hexadecimal
+-- @return: String representation of the hexadecimal
 ---
-function isValidEthereumAddress(address)
-    return string.match(address, '^0x[%x]+') ~= nil and #address == 42
+local function numberToHex(num)
+    return string.format("%x", num)
 end
 
 ---
--- Generates a random player ID
--- @return: A random string representing player ID
+-- Generate a random hex string of specified length
+-- @param length: Desired length of the hex string
+-- @return: Random hexadecimal string
 ---
-function generatePlayerId()
-    local playerId = 'player_' .. tostring(math.random(100000, 999999))
-    return playerId
+local function randomHex(length)
+    local chars = '0123456789abcdef'
+    local result = ''
+    for i = 1, length do
+        local index = math.random(1, #chars)
+        result = result .. chars:sub(index, index)
+    end
+    return result
 end
 
 ---
--- Formats a game's token balance
--- @param balance: The balance amount in tokens
--- @return: A string formatted with the token symbol
+-- Check if a given value is a valid Ethereum address
+-- @param address: String input to validate
+-- @return: Boolean indicating if valid
 ---
-function formatTokenBalance(balance)
-    return string.format('%.4f Tokens', balance)
-end
-
----
--- Converts a timestamp to a formatted date string
--- @param timestamp: The timestamp to format
--- @return: A formatted date string
----
-function formatDate(timestamp)
-    return os.date('%Y-%m-%d %H:%M:%S', timestamp)
+local function isValidEthereumAddress(address)
+    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
 end
 
 return {
-    hexToDecimal = hexToDecimal,
-    isValidEthereumAddress = isValidEthereumAddress,
-    generatePlayerId = generatePlayerId,
-    formatTokenBalance = formatTokenBalance,
-    formatDate = formatDate,
+    hexToNumber = hexToNumber,
+    numberToHex = numberToHex,
+    randomHex = randomHex,
+    isValidEthereumAddress = isValidEthereumAddress
 }

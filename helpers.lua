@@ -1,35 +1,36 @@
--- Logger module with rotation setup
-
-local Logger = {}
-local logFilePath = 'app.log'
-local maxFileSize = 1024 * 1024 * 5 -- 5 MB
-
-local function getFileSize(filePath)
-    local file = io.open(filePath, 'r')
-    if file then
-        local size = file:seek('end')
-        file:close()
-        return size
+-- Utility function to calculate average
+local function calculateAverage(values)
+    local sum = 0
+    for _, value in ipairs(values) do
+        sum = sum + value
     end
-    return 0
+    return sum / #values
 end
 
-local function rotateLogFile()
-    if getFileSize(logFilePath) >= maxFileSize then
-        local rotatedFilePath = logFilePath .. '.' .. os.time()
-        os.rename(logFilePath, rotatedFilePath)
+-- Function to optimize player scoring
+local function optimizeScores(players)
+    local scores = {}
+    for _, player in ipairs(players) do
+        local totalScore = calculateAverage(player.scores)
+        table.insert(scores, {name = player.name, optimizedScore = totalScore})
     end
+    return scores
 end
 
-function Logger.log(message)
-    rotateLogFile()
-    local file = io.open(logFilePath, 'a')
-    if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        file:close()
-    else
-        error('Could not open log file for writing.')
-    end
+-- Function to sort players by optimized scores
+local function sortPlayersByScore(players)
+    table.sort(players, function(a, b) 
+        return a.optimizedScore > b.optimizedScore
+    end)
 end
 
-return Logger
+-- Main function to optimize and sort player's scores
+local function optimizeAndSortPlayers(players)
+    local optimizedPlayers = optimizeScores(players)
+    sortPlayersByScore(optimizedPlayers)
+    return optimizedPlayers
+end
+
+return {
+    optimizeAndSortPlayers = optimizeAndSortPlayers
+}

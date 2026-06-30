@@ -1,34 +1,43 @@
---[[
-    This module contains helper functions 
-    for various operations in the web3 gaming context.
-    Functions include validation and formatting utilities.
---]]
+-- Logger module for handling log rotation
 
-local M = {}
+local logger = {}
+local lfs = require('lfs')
 
---- Validates if a string is a valid Ethereum address.
--- @param address string - The Ethereum address to validate.
--- @return boolean - Returns true if valid, false otherwise.
-function M.isValidEthereumAddress(address)
-    return address:match('^0x[a-fA-F0-9]{40}$') ~= nil
-end
+-- Log file parameters
+local logFilePath = 'app.log'
+local maxLogSize = 1024 * 1024 * 5 -- 5MB
+local logBackupCount = 5
 
---- Formats a number to a fixed decimal point based on currency.
--- @param amount number - The amount to format.
--- @param decimals integer - The number of decimal places.
--- @return string - The formatted number as a string.
-function M.formatAmount(amount, decimals)
-    if type(amount) ~= 'number' or type(decimals) ~= 'number' then
-        error('Invalid arguments: amount and decimals must be numbers')
+-- Function to check log size and rotate logs
+local function checkLogRotation()
+    local file = io.open(logFilePath, 'a')
+    if not file then return end
+
+    local currentSize = file:seek('end')
+    file:close()
+
+    if currentSize < maxLogSize then return end
+
+    -- Rotate logs
+    for i = logBackupCount, 1, -1 do
+        local oldName = logFilePath .. '.' .. i
+        local newName = logFilePath .. '.' .. (i + 1)
+        if lfs.attributes(oldName) then
+            os.rename(oldName, newName)
+        end
     end
-    return string.format('%.2f', amount)
+    os.rename(logFilePath, logFilePath .. '.1')
 end
 
---- Checks if a given game ID is valid.
--- @param gameId string - The ID of the game.
--- @return boolean - Returns true if valid, false otherwise.
-function M.isValidGameId(gameId)
-    return gameId ~= nil and #gameId > 0
+-- Function to log messages
+function logger.log(message)
+    checkLogRotation()
+    local file = io.open(logFilePath, 'a')
+    if file then
+        local timestamp = os.date('%Y-%m-%d %H:%M:%S')
+        file:write(string.format('%s: %s\n', timestamp, message))
+        file:close()
+    end
 end
 
-return M
+return logger

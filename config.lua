@@ -1,48 +1,40 @@
--- Configuration Loader with Defaults
+local json = require('json')
 
-local json = require('dkjson') -- Use dkjson for JSON parsing
-
-local Config = {}
-Config.defaultConfig = {
-    setting1 = "value1",
-    setting2 = true,
-    setting3 = 10,
-    nested = {
-        subSetting1 = "subValue1",
-        subSetting2 = false
+local defaultConfig = {
+    database = {
+        host = 'localhost',
+        port = 5432,
+        user = 'user',
+        password = 'password',
+        dbname = 'game_db'
+    },
+    server = {
+        port = 8080,
+        mode = 'development'
+    },
+    logging = {
+        level = 'info',
+        file = 'app.log'
     }
 }
 
-function Config.loadConfig(filePath)
-    local file, err = io.open(filePath, "r")
-    if err then
-        print("Error opening config file: " .. err)
-        return Config.defaultConfig  -- Return defaults if file not found
+local function loadConfig(filePath)
+    local configFile = io.open(filePath, 'r')
+    if not configFile then
+        return defaultConfig  -- Return defaults if config file not found
     end
-
-    local content = file:read("*a")
-    file:close()
-
+    local content = configFile:read('*a')
+    configFile:close()
     local userConfig = json.decode(content)
-    if not userConfig then
-        print("Error parsing JSON, returning defaults")
-        return Config.defaultConfig
-    end
 
-    -- Merge defaults with user config
-    for key, value in pairs(Config.defaultConfig) do
-        if userConfig[key] == nil then
-            userConfig[key] = value
-        elseif type(value) == "table" and type(userConfig[key]) == "table" then
-            for subKey, subValue in pairs(value) do
-                if userConfig[key][subKey] == nil then
-                    userConfig[key][subKey] = subValue
-                end
-            end
-        end
+    -- Combine default config with user config
+    local finalConfig = {}
+    for k, v in pairs(defaultConfig) do
+        finalConfig[k] = userConfig[k] or v
     end
-
-    return userConfig
+    return finalConfig
 end
 
-return Config
+return {
+    loadConfig = loadConfig
+}

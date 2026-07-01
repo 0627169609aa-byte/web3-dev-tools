@@ -1,43 +1,38 @@
--- Core module to handle game state optimizations
+-- Core game logic for web3 gaming
 
-local GameState = {}
+local Game = {}
 
--- Initialize game state
-function GameState:new()
-    local instance = {
-        players = {},
-        map = {},
-        resources = {}
-    }
-    setmetatable(instance, self)
+-- Initialize the game
+function Game:new(name)
+    local obj = { name = name, players = {}, state = 'waiting' }
+    setmetatable(obj, self)
     self.__index = self
-    return instance
+    return obj
 end
 
--- Update player position efficiently
-function GameState:updatePlayerPosition(playerId, newPosition)
-    if self.players[playerId] then
-        self.players[playerId].position = newPosition
-    else
-        print("Player not found!")
+-- Add a player to the game
+function Game:addPlayer(player)
+    table.insert(self.players, player)
+end
+
+-- Start the game
+function Game:start()
+    if #self.players < 2 then
+        error('Not enough players to start the game!')
     end
+    self.state = 'active'
+    print('Game started with '.. #self.players ..' players.')
 end
 
--- Add or update resource in map
-function GameState:upsertResource(resourceId, resourceData)
-    self.resources[resourceId] = resourceData
+-- End the game
+function Game:endGame()
+    self.state = 'finished'
+    print('Game has ended. Thank you for playing!')
 end
 
--- Optimize resource fetching by caching
-function GameState:getResource(resourceId)
-    return self.resources[resourceId] or nil
+-- Get the current state of the game
+function Game:getState()
+    return self.state
 end
 
--- Batch update players' states
-function GameState:batchUpdatePlayers(updates)
-    for playerId, newPosition in pairs(updates) do
-        self:updatePlayerPosition(playerId, newPosition)
-    end
-end
-
-return GameState
+return Game

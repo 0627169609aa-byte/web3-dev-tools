@@ -1,31 +1,40 @@
--- Initialize web3 gaming tools
+-- Initialization for the Web3 Game
 
-local Web3Tools = {}
+local web3 = require('web3')
+local config = require('config')
 
--- Function to handle errors and edge cases
-local function handleError(err)
-    if type(err) == 'string' then
-        print('Error: ' .. err)
-    elseif type(err) == 'table' and err.message then
-        print('Error: ' .. err.message)
-    else
-        print('Unknown error occurred')
-    end
+-- Function to initialize web3 provider
+local function initWeb3Provider()
+    local providerUrl = config.providerUrl
+    local web3Instance = web3.new(providerUrl)
+    return web3Instance
 end
 
--- Example function to interact with a blockchain
-function Web3Tools.interactWithBlockchain(data)
-    pcall(function()  -- Protected call to handle any errors
-        if not data or type(data) ~= 'table' then
-            error('Invalid input data')
-        end
-        -- Simulate processing the data
-        print('Interacting with blockchain using: ', data)
-        -- Simulate potential error
-        if data.shouldFail then
-            error('Simulated failure')
-        end
-    end, handleError)  -- Handle errors with a callback
+-- Function to retrieve player data from blockchain
+local function getPlayerData(playerId)
+    local web3Instance = initWeb3Provider()
+    local playerContract = web3Instance.contract(config.playerContractAddress)
+    local playerData = playerContract.methods.getPlayer(playerId):call()
+    return playerData
 end
 
-return Web3Tools
+-- Function to update player score on the blockchain
+local function updatePlayerScore(playerId, newScore)
+    local web3Instance = initWeb3Provider()
+    local playerContract = web3Instance.contract(config.playerContractAddress)
+    playerContract.methods.updateScore(playerId, newScore):send({from = config.ownerAddress})
+end
+
+-- Initialize the application
+local function init()
+    print('Web3 Gaming App Initialized')
+    -- Example usage
+    local playerId = 1
+    local newScore = 100
+    updatePlayerScore(playerId, newScore)
+    local playerData = getPlayerData(playerId)
+    print('Player Data:', playerData)
+end
+
+-- Run the initialization
+init()

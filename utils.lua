@@ -1,50 +1,38 @@
--- Helper Functions for Common Operations
+-- Utility function to handle gaming data
 
----
--- Convert a hexadecimal string to a number
--- @param hexStr: String representing the hexadecimal number
--- @return: Number representation of the hexadecimal
----
-local function hexToNumber(hexStr)
-    return tonumber(hexStr, 16)
-end
+local utils = {}
 
----
--- Convert a number to a hexadecimal string
--- @param num: Number to convert to hexadecimal
--- @return: String representation of the hexadecimal
----
-local function numberToHex(num)
-    return string.format("%x", num)
-end
-
----
--- Generate a random hex string of specified length
--- @param length: Desired length of the hex string
--- @return: Random hexadecimal string
----
-local function randomHex(length)
-    local chars = '0123456789abcdef'
-    local result = ''
-    for i = 1, length do
-        local index = math.random(1, #chars)
-        result = result .. chars:sub(index, index)
+-- Function to calculate the average score from a table of scores
+-- @param scores Table of numeric scores
+-- @return Number representing the average score
+function utils.calculateAverageScore(scores)
+    if #scores == 0 then
+        return 0
     end
-    return result
+    local total = 0
+    for _, score in ipairs(scores) do
+        total = total + score
+    end
+    return total / #scores
 end
 
----
--- Check if a given value is a valid Ethereum address
--- @param address: String input to validate
--- @return: Boolean indicating if valid
----
-local function isValidEthereumAddress(address)
-    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
+-- Function to format player statistics
+-- @param playerTable Table containing player stats
+-- @return Formatted string of player stats
+function utils.formatPlayerStats(playerTable)
+    local stats = ""
+    for key, value in pairs(playerTable) do
+        stats = stats .. string.format("%s: %s\n", key, value)
+    end
+    return stats
 end
 
-return {
-    hexToNumber = hexToNumber,
-    numberToHex = numberToHex,
-    randomHex = randomHex,
-    isValidEthereumAddress = isValidEthereumAddress
-}
+-- Function to determine if a player meets a score threshold
+-- @param playerScore Player's current score
+-- @param threshold Minimum score required
+-- @return Boolean indicating if the player meets the threshold
+function utils.isScoreAboveThreshold(playerScore, threshold)
+    return playerScore > threshold
+end
+
+return utils

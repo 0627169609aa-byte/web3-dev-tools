@@ -1,38 +1,40 @@
--- Core game logic for web3 gaming
+-- Utility function for network operations
 
-local Game = {}
-
--- Initialize the game
-function Game:new(name)
-    local obj = { name = name, players = {}, state = 'waiting' }
-    setmetatable(obj, self)
-    self.__index = self
-    return obj
+local function http_request(url)
+    -- Simulate an HTTP request (replace with actual request)
+    local response, err = simulate_http_request(url)  
+    return response, err
 end
 
--- Add a player to the game
-function Game:addPlayer(player)
-    table.insert(self.players, player)
-end
+-- Retry logic implementation
+local function retry_request(url, retries, delay)
+    local attempts = 0
+    local response, err
 
--- Start the game
-function Game:start()
-    if #self.players < 2 then
-        error('Not enough players to start the game!')
+    while attempts < retries do
+        response, err = http_request(url)
+        if response then
+            return response  -- Successful request, return response
+        end
+        attempts = attempts + 1
+        -- Wait before the next attempt
+        os.execute("sleep " .. delay)
     end
-    self.state = 'active'
-    print('Game started with '.. #self.players ..' players.')
+    return nil, err  -- Return nil if all attempts fail
 end
 
--- End the game
-function Game:endGame()
-    self.state = 'finished'
-    print('Game has ended. Thank you for playing!')
+-- Example usage
+local function fetch_data()
+    local url = "https://api.example.com/data"
+    local max_retries = 5
+    local wait_time = 2  -- seconds
+
+    local data, err = retry_request(url, max_retries, wait_time)
+    if not data then
+        print("Failed to fetch data:", err)
+    else
+        print("Data fetched successfully:", data)
+    end
 end
 
--- Get the current state of the game
-function Game:getState()
-    return self.state
-end
-
-return Game
+fetch_data()

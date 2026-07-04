@@ -1,33 +1,37 @@
--- Game state management module
-local GameState = {}
+-- Core module for web3-dev-tools
+local Game = {}
 
--- Function to initialize the game state
-function GameState:new()
-    local instance = { score = 0, level = 1 }
-    setmetatable(instance, self)
-    self.__index = self
-    return instance
-end
+-- Function to optimize resource allocation
+function Game.optimizeResources(resources)
+    local optimizedResources = {}
+    local totalWeight = 0
 
--- Function to update game score
-function GameState:updateScore(points)
-    if type(points) ~= 'number' then
-        error('Invalid input: points must be a number')
+    -- Calculate total weight of resources
+    for _, resource in ipairs(resources) do
+        totalWeight = totalWeight + resource.weight
     end
-    self.score = self.score + points
-end
 
--- Function to advance to the next level
-function GameState:nextLevel()
-    if self.level >= 10 then
-        error('Maximum level reached')
+    -- Optimize resource distribution based on weight
+    for _, resource in ipairs(resources) do
+        local ratio = resource.weight / totalWeight
+        optimizedResources[resource.name] = {
+            amount = math.floor(ratio * 100), -- Allocate up to 100 units max
+            weight = resource.weight
+        }
     end
-    self.level = self.level + 1
+
+    return optimizedResources
 end
 
--- Function to get the current state
-function GameState:getState()
-    return { score = self.score, level = self.level }
+-- Function to handle game events efficiently
+function Game.handleEvent(event)
+    if event.type == 'spawn' then
+        -- Spawn logic here
+        print('Spawning resources: ', event.resources)
+    elseif event.type == 'destroy' then
+        -- Destroy logic here
+        print('Destroying resource: ', event.resourceId)
+    end
 end
 
-return GameState
+return Game

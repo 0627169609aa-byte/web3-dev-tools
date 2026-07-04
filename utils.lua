@@ -1,38 +1,37 @@
--- Utility function to handle gaming data
+-- Utility functions for performance optimization
 
-local utils = {}
+local M = {}
 
--- Function to calculate the average score from a table of scores
--- @param scores Table of numeric scores
--- @return Number representing the average score
-function utils.calculateAverageScore(scores)
-    if #scores == 0 then
-        return 0
+-- Cache storage for results to avoid redundant calculations
+local cache = {}
+
+-- Function to calculate expensive operation
+-- Leverages caching for optimization
+function M.expensiveOperation(x)
+    if cache[x] then
+        return cache[x]  -- Return cached result if available
     end
-    local total = 0
-    for _, score in ipairs(scores) do
-        total = total + score
-    end
-    return total / #scores
+    
+    -- Simulate an expensive calculation
+    local result = x * x -- Example of an expensive operation
+
+    -- Store result in cache
+    cache[x] = result
+    return result
 end
 
--- Function to format player statistics
--- @param playerTable Table containing player stats
--- @return Formatted string of player stats
-function utils.formatPlayerStats(playerTable)
-    local stats = ""
-    for key, value in pairs(playerTable) do
-        stats = stats .. string.format("%s: %s\n", key, value)
+-- Function to clear cache
+function M.clearCache()
+    cache = {}
+end
+
+-- Batch processing of operations with optimization
+function M.batchProcess(values)
+    local results = {}
+    for _, value in ipairs(values) do
+        table.insert(results, M.expensiveOperation(value))
     end
-    return stats
+    return results
 end
 
--- Function to determine if a player meets a score threshold
--- @param playerScore Player's current score
--- @param threshold Minimum score required
--- @return Boolean indicating if the player meets the threshold
-function utils.isScoreAboveThreshold(playerScore, threshold)
-    return playerScore > threshold
-end
-
-return utils
+return M

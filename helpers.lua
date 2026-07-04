@@ -1,48 +1,36 @@
--- Utility functions for web3 gaming
-
-local M = {}
-
--- Function to handle errors gracefully
-local function handleError(err)
-    if type(err) == 'string' then
-        print('Error: ' .. err)
-    elseif type(err) == 'table' and err.message then
-        print('Error: ' .. err.message)
-    else
-        print('An unexpected error occurred.')
+local function delay(seconds)
+    local start = os.clock()
+    while os.clock() - start < seconds do
+        -- wait
     end
 end
 
--- Function to fetch game data with error handling
-function M.fetchGameData(apiUrl)
-    local success, result = pcall(function()
-        local response = http.get(apiUrl)
-        if not response then
-            error('Failed to fetch data from API.')
+local function retry(func, retries, delaySeconds)
+    local attempt = 0
+    while attempt < retries do
+        local status, result = pcall(func)
+        if status then
+            return result
+        else
+            attempt = attempt + 1
+            if attempt < retries then
+                delay(delaySeconds)
+            end
         end
-        return response:readAll()
-    end)
-
-    if not success then
-        handleError(result)
-        return nil
     end
-
-    return result
+    error('Maximum retries reached')
 end
 
--- Function to convert JSON to table while handling errors
-function M.parseJSON(jsonString)
-    local success, data = pcall(function()
-        return json.decode(jsonString)
-    end)
-
-    if not success then
-        handleError(data)
-        return nil
+-- Example usage
+local function fetchData()
+    -- Simulated network operation
+    if math.random() < 0.7 then
+        error('Network error')
     end
-
-    return data
+    return 'Data retrieved successfully'
 end
 
-return M
+return {
+    retry = retry,
+    fetchData = fetchData
+}

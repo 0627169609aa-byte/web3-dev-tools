@@ -1,37 +1,36 @@
--- Utility functions for performance optimization
+-- Utility functions for gaming data handling
 
-local M = {}
+local GameUtils = {}
 
--- Cache storage for results to avoid redundant calculations
-local cache = {}
-
--- Function to calculate expensive operation
--- Leverages caching for optimization
-function M.expensiveOperation(x)
-    if cache[x] then
-        return cache[x]  -- Return cached result if available
+-- Converts a table of player data to JSON format
+function GameUtils.playersToJson(players)
+    local json = require('json')  -- assume a JSON library is available
+    local jsonString, err = json.encode(players)
+    if err then
+        error('Failed to encode players to JSON: ' .. err)
     end
-    
-    -- Simulate an expensive calculation
-    local result = x * x -- Example of an expensive operation
-
-    -- Store result in cache
-    cache[x] = result
-    return result
+    return jsonString
 end
 
--- Function to clear cache
-function M.clearCache()
-    cache = {}
-end
-
--- Batch processing of operations with optimization
-function M.batchProcess(values)
-    local results = {}
-    for _, value in ipairs(values) do
-        table.insert(results, M.expensiveOperation(value))
+-- Parses JSON string back to table of player data
+function GameUtils.jsonToPlayers(jsonString)
+    local json = require('json')  -- assume a JSON library is available
+    local players, err = json.decode(jsonString)
+    if err then
+        error('Failed to decode JSON to players: ' .. err)
     end
-    return results
+    return players
 end
 
-return M
+-- Filters players based on a specific attribute
+function GameUtils.filterPlayersByAttribute(players, attribute, value)
+    local filteredPlayers = {}
+    for _, player in ipairs(players) do
+        if player[attribute] == value then
+            table.insert(filteredPlayers, player)
+        end
+    end
+    return filteredPlayers
+end
+
+return GameUtils

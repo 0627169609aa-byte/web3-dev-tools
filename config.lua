@@ -1,40 +1,43 @@
-local json = require('json')
+-- Configuration loader with defaults
 
+local json = require('dkjson')  -- Import JSON library
+
+-- Default configuration
 local defaultConfig = {
-    database = {
-        host = 'localhost',
-        port = 5432,
-        user = 'user',
-        password = 'password',
-        dbname = 'game_db'
-    },
-    server = {
-        port = 8080,
-        mode = 'development'
-    },
-    logging = {
-        level = 'info',
-        file = 'app.log'
-    }
+    gameName = 'My Awesome Game',
+    maxPlayers = 100,
+    difficulty = 'normal',
+    serverHost = 'localhost',
+    serverPort = 8080,
 }
 
-local function loadConfig(filePath)
-    local configFile = io.open(filePath, 'r')
-    if not configFile then
-        return defaultConfig  -- Return defaults if config file not found
+-- Function to load configuration from a file
+local function loadConfig(filename)
+    local file, err = io.open(filename, 'r')
+    if not file then
+        print('Could not open config file: ' .. err)
+        return defaultConfig  -- Return defaults if file fails to load
     end
-    local content = configFile:read('*a')
-    configFile:close()
-    local userConfig = json.decode(content)
-
-    -- Combine default config with user config
-    local finalConfig = {}
+    
+    local content = file:read('*a')
+    file:close()
+    
+    local config, pos, err = json.decode(content, 1, nil)
+    if err then
+        print('Error parsing JSON config: ' .. err)
+        return defaultConfig  -- Return defaults if JSON parsing fails
+    end
+    
+    -- Merge defaults with loaded config
     for k, v in pairs(defaultConfig) do
-        finalConfig[k] = userConfig[k] or v
+        if config[k] == nil then
+            config[k] = v  -- Assign default value
+        end
     end
-    return finalConfig
+    
+    return config
 end
 
-return {
-    loadConfig = loadConfig
-}
+-- Load the configuration
+local config = loadConfig('game_config.json')
+return config

@@ -1,40 +1,50 @@
--- Initialization for the Web3 Game
+--[[
+    init.lua
+    This script initializes the game environment,
+    setting up necessary configurations and error handling.
+]]
 
-local web3 = require('web3')
-local config = require('config')
-
--- Function to initialize web3 provider
-local function initWeb3Provider()
-    local providerUrl = config.providerUrl
-    local web3Instance = web3.new(providerUrl)
-    return web3Instance
+-- Function to load configurations
+local function loadConfig()
+    local success, config = pcall(function()
+        return require('config')
+    end)
+    if not success then
+        error('Failed to load configuration: ' .. config)
+    end
+    return config
 end
 
--- Function to retrieve player data from blockchain
-local function getPlayerData(playerId)
-    local web3Instance = initWeb3Provider()
-    local playerContract = web3Instance.contract(config.playerContractAddress)
-    local playerData = playerContract.methods.getPlayer(playerId):call()
-    return playerData
+-- Function to initialize the game
+local function initializeGame()
+    local config = loadConfig()
+    -- Initialize game attributes
+    local gameData = { players = {}, state = 'initializing' }
+    return gameData
 end
 
--- Function to update player score on the blockchain
-local function updatePlayerScore(playerId, newScore)
-    local web3Instance = initWeb3Provider()
-    local playerContract = web3Instance.contract(config.playerContractAddress)
-    playerContract.methods.updateScore(playerId, newScore):send({from = config.ownerAddress})
+-- Function to handle game start
+local function startGame()
+    local success, gameData = pcall(initializeGame)
+    if not success then
+        print('Error starting game: ' .. gameData)
+        return nil
+    end
+    return gameData
 end
 
--- Initialize the application
-local function init()
-    print('Web3 Gaming App Initialized')
-    -- Example usage
-    local playerId = 1
-    local newScore = 100
-    updatePlayerScore(playerId, newScore)
-    local playerData = getPlayerData(playerId)
-    print('Player Data:', playerData)
+--[=[
+    Main entry point of the module.
+    Starts the game and handles any potential errors.
+]=]--
+local function main()
+    local success, game = pcall(startGame)
+    if not success then
+        print('Unexpected error: ' .. game)
+    else
+        print('Game started successfully!')
+    end
 end
 
--- Run the initialization
-init()
+-- Execute the main function
+main()

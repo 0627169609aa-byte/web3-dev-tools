@@ -1,36 +1,25 @@
--- Utility functions for gaming data handling
+-- Utility function to perform network operations with retry logic
 
-local GameUtils = {}
+local http = require('socket.http')
 
--- Converts a table of player data to JSON format
-function GameUtils.playersToJson(players)
-    local json = require('json')  -- assume a JSON library is available
-    local jsonString, err = json.encode(players)
-    if err then
-        error('Failed to encode players to JSON: ' .. err)
-    end
-    return jsonString
-end
+local function perform_network_operation(url, attempts, delay)
+    local response, status
+    attempts = attempts or 3  -- Default to 3 attempts
+    delay = delay or 2        -- Default delay of 2 seconds
 
--- Parses JSON string back to table of player data
-function GameUtils.jsonToPlayers(jsonString)
-    local json = require('json')  -- assume a JSON library is available
-    local players, err = json.decode(jsonString)
-    if err then
-        error('Failed to decode JSON to players: ' .. err)
-    end
-    return players
-end
-
--- Filters players based on a specific attribute
-function GameUtils.filterPlayersByAttribute(players, attribute, value)
-    local filteredPlayers = {}
-    for _, player in ipairs(players) do
-        if player[attribute] == value then
-            table.insert(filteredPlayers, player)
+    for i = 1, attempts do
+        response, status = http.request(url)
+        if status == 200 then
+            return response
+        elseif i < attempts then
+            print('Attempt ' .. i .. ' failed. Retrying in ' .. delay .. ' seconds...')
+            os.execute('sleep ' .. delay)
         end
     end
-    return filteredPlayers
+
+    error('All attempts to fetch ' .. url .. ' failed.')
 end
 
-return GameUtils
+return {
+    perform_network_operation = perform_network_operation
+}

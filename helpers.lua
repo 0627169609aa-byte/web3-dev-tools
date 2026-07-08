@@ -1,36 +1,46 @@
-local function delay(seconds)
-    local start = os.clock()
-    while os.clock() - start < seconds do
-        -- wait
-    end
+-- Utility functions for web3 gaming
+
+---
+-- Converts hex string to decimal number.
+-- @param hexStr: Hexadecimal string to convert.
+-- @return number: Decimal representation of the hex string.
+---
+local function hexToDecimal(hexStr)
+    return tonumber(hexStr, 16)
 end
 
-local function retry(func, retries, delaySeconds)
-    local attempt = 0
-    while attempt < retries do
-        local status, result = pcall(func)
-        if status then
-            return result
-        else
-            attempt = attempt + 1
-            if attempt < retries then
-                delay(delaySeconds)
-            end
-        end
-    end
-    error('Maximum retries reached')
+---
+-- Formats a balance in Wei to Ether.
+-- @param weiBalance: Balance in Wei to format.
+-- @return string: Formatted balance in Ether.
+---
+local function formatWeiToEther(weiBalance)
+    local etherBalance = weiBalance / 1e18
+    return string.format('%.18f ETH', etherBalance)
 end
 
--- Example usage
-local function fetchData()
-    -- Simulated network operation
-    if math.random() < 0.7 then
-        error('Network error')
-    end
-    return 'Data retrieved successfully'
+---
+-- Checks if a given address is valid.
+-- @param address: The Ethereum address to validate.
+-- @return boolean: True if valid, false otherwise.
+---
+local function isValidEthereumAddress(address)
+    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
+end
+
+---
+-- Retrieves the game state from a smart contract.
+-- @param contract: The smart contract instance.
+-- @return table: The game state information.
+---
+local function getGameState(contract)
+    local state = contract:getState()
+    return state
 end
 
 return {
-    retry = retry,
-    fetchData = fetchData
+    hexToDecimal = hexToDecimal,
+    formatWeiToEther = formatWeiToEther,
+    isValidEthereumAddress = isValidEthereumAddress,
+    getGameState = getGameState,
 }

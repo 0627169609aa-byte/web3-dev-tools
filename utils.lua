@@ -1,49 +1,31 @@
--- Utility functions for gaming data handling
+-- Utility functions for web3 gaming
 
-local M = {}
+local utils = {}
 
---- Convert game data from raw format to structured format
--- @param rawData table: Raw game data to be structured
--- @return table: Structured game data
-function M.convertGameData(rawData)
-    local structuredData = {}
-
-    for _, entry in ipairs(rawData) do
-        local gameEntry = {
-            id = entry.id,
-            name = entry.name,
-            genre = entry.genre,
-            releaseDate = os.time({
-                year = entry.releaseYear,
-                month = entry.releaseMonth,
-                day = entry.releaseDay
-            }),
-            rating = tonumber(entry.rating)
-        }
-        table.insert(structuredData, gameEntry)
-    end
-    return structuredData
+-- Generates a unique token ID
+function utils.generateTokenId()
+    return math.random(100000, 999999)
 end
 
---- Calculate average rating from game entries
--- @param games table: List of game entries
--- @return number: Average rating of the games
-function M.calculateAverageRating(games)
-    local totalRating = 0
-    local count = 0
-
-    for _, game in ipairs(games) do
-        if game.rating then
-            totalRating = totalRating + game.rating
-            count = count + 1
-        end
-    end
-
-    if count > 0 then
-        return totalRating / count
-    else
-        return 0  -- Prevent division by zero
-    end
+-- Validates an Ethereum address
+function utils.isValidEthereumAddress(address)
+    if type(address) ~= 'string' then return false end
+    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
 end
 
-return M
+-- Converts a hex value to decimal
+function utils.hexToDecimal(hex)
+    return tonumber(hex, 16)
+end
+
+-- Formats a number with commas
+function utils.formatNumber(number)
+    return string.format('%d', number):reverse():gsub('(%d%d%d)', '%1,'):reverse()
+end
+
+-- Returns the current timestamp
+function utils.getCurrentTimestamp()
+    return os.time()
+end
+
+return utils

@@ -1,46 +1,36 @@
--- Utility functions for web3 gaming
+-- Helper functions for game utilities
 
----
--- Converts hex string to decimal number.
--- @param hexStr: Hexadecimal string to convert.
--- @return number: Decimal representation of the hex string.
----
-local function hexToDecimal(hexStr)
-    return tonumber(hexStr, 16)
+local M = {}
+
+-- Generates a random number between min and max
+function M.random_range(min, max)
+    return math.random(min, max)
 end
 
----
--- Formats a balance in Wei to Ether.
--- @param weiBalance: Balance in Wei to format.
--- @return string: Formatted balance in Ether.
----
-local function formatWeiToEther(weiBalance)
-    local etherBalance = weiBalance / 1e18
-    return string.format('%.18f ETH', etherBalance)
+-- Checks if a value exists in a table
+function M.table_contains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
+        end
+    end
+    return false
 end
 
----
--- Checks if a given address is valid.
--- @param address: The Ethereum address to validate.
--- @return boolean: True if valid, false otherwise.
----
-local function isValidEthereumAddress(address)
-    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
+-- Shuffles a table in place
+function M.shuffle_table(t)
+    for i = #t, 2, -1 do
+        local j = math.random(i)
+        t[i], t[j] = t[j], t[i]
+    end
 end
 
----
--- Retrieves the game state from a smart contract.
--- @param contract: The smart contract instance.
--- @return table: The game state information.
----
-local function getGameState(contract)
-    local state = contract:getState()
-    return state
+-- Merges two tables
+function M.merge_tables(t1, t2)
+    for k, v in pairs(t2) do
+        t1[k] = v
+    end
+    return t1
 end
 
-return {
-    hexToDecimal = hexToDecimal,
-    formatWeiToEther = formatWeiToEther,
-    isValidEthereumAddress = isValidEthereumAddress,
-    getGameState = getGameState,
-}
+return M

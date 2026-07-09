@@ -2,30 +2,33 @@
 
 local utils = {}
 
--- Generates a unique token ID
-function utils.generateTokenId()
-    return math.random(100000, 999999)
+-- Check if a value is a valid address
+function utils.isValidAddress(address)
+    return type(address) == 'string' and string.match(address, '^0x[%x]+$')
 end
 
--- Validates an Ethereum address
-function utils.isValidEthereumAddress(address)
-    if type(address) ~= 'string' then return false end
-    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
-end
-
--- Converts a hex value to decimal
+-- Convert a hex string to decimal
 function utils.hexToDecimal(hex)
     return tonumber(hex, 16)
 end
 
--- Formats a number with commas
-function utils.formatNumber(number)
-    return string.format('%d', number):reverse():gsub('(%d%d%d)', '%1,'):reverse()
+-- Format a timestamp to a readable string
+function utils.formatTimestamp(timestamp)
+    local date = os.date('*t', timestamp)
+    return string.format('%04d-%02d-%02d %02d:%02d:%02d', 
+        date.year, date.month, date.day, date.hour, date.min, date.sec)
 end
 
--- Returns the current timestamp
-function utils.getCurrentTimestamp()
-    return os.time()
+-- Generate a random ID
+function utils.randomID(length)
+    local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    local id = ''
+    for i = 1, length do
+        local index = math.random(1, #chars)
+        id = id .. chars:sub(index, index)
+    end
+    return id
 end
 
+-- Export the utils module
 return utils

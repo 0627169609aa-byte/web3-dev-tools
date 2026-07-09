@@ -1,47 +1,30 @@
--- Initialize web3 gaming tools
+-- Main processing loop for the game
 
-local function handleError(err)
-    if err then
-        print("Error: " .. err)
-        -- Additional logging can be added here
+local function isValidInput(input)
+    if type(input) ~= "string" then
+        return false, "Input must be a string."
     end
+    if input:match("^[%w%s]+$") == nil then
+        return false, "Input contains invalid characters."
+    end
+    return true
 end
 
-local function connectToBlockchain(url)
-    local success, err = pcall(function()
-        -- Simulated connection logic
-        if url == nil then
-            error("Connection URL cannot be nil")
-        end
-        print("Connecting to blockchain at " .. url)
-        -- Simulate a successful connection
-        return true
-    end)
-    handleError(err)
-    return success
-end
-
-local function loadGameData(gameId)
-    local success, err = pcall(function()
-        -- Simulated game data loading logic
-        if gameId <= 0 then
-            error("Invalid game ID")
-        end
-        print("Loading game data for ID: " .. gameId)
-        -- Simulate successful data loading
-        return {id = gameId, name = "Example Game"}
-    end)
-    handleError(err)
-    return success
+local function processInput(input)
+    local valid, err = isValidInput(input)
+    if not valid then
+        print(err)
+        return
+    end
+    -- Process the valid input
+    print("Processing input: " .. input)
 end
 
 local function main()
-    if not connectToBlockchain("https://example.com") then
-        return
-    end
-    local gameData = loadGameData(1)
-    if gameData then
-        print("Game Loaded: " .. gameData.name)
+    while true do
+        print("Please enter your command:")
+        local input = io.read()
+        processInput(input)
     end
 end
 

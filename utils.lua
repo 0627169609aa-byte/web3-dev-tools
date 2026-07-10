@@ -1,45 +1,48 @@
-local json = require('json')
+-- Utility functions for gaming data handling
 
-local function validatePlayerData(data)
-    if not data.name or type(data.name) ~= 'string' then
-        return false, 'Invalid player name.'
+local utils = {}
+
+--- Parse JSON string to Lua table
+-- @param jsonString: string containing JSON data
+-- @return table: Lua table representation of the JSON
+function utils.parseJSON(jsonString)
+    local success, result = pcall(function()
+        return game:GetService('HttpService'):JSONDecode(jsonString)
+    end)
+    if not success then
+        error('Failed to parse JSON: ' .. tostring(result))
     end
-    if not data.score or type(data.score) ~= 'number' then
-        return false, 'Invalid player score.'
-    end
-    return true, nil
+    return result
 end
 
-local function savePlayerData(filePath, playerData)
-    local isValid, err = validatePlayerData(playerData)
-    if not isValid then
-        return nil, err
+--- Convert Lua table to JSON string
+-- @param luaTable: table to convert to JSON
+-- @return string: JSON representation of the Lua table
+function utils.convertToJSON(luaTable)
+    local success, result = pcall(function()
+        return game:GetService('HttpService'):JSONEncode(luaTable)
+    end)
+    if not success then
+        error('Failed to convert to JSON: ' .. tostring(result))
     end
-    local file, err = io.open(filePath, 'w')
-    if not file then
-        return nil, 'Could not open file: ' .. err
-    end
-    local jsonData = json.encode(playerData)
-    file:write(jsonData)
-    file:close()
-    return true
+    return result
 end
 
-local function loadPlayerData(filePath)
-    local file, err = io.open(filePath, 'r')
-    if not file then
-        return nil, 'Could not open file: ' .. err
+--- Deep copy a table
+-- @param original: table to be copied
+-- @return table: new deep copied table
+function utils.deepCopy(original)
+    local copy
+    if type(original) == 'table' then
+        copy = {}
+        for key, value in next, original, nil do
+            copy[utils.deepCopy(key)] = utils.deepCopy(value)
+        end
+        setmetatable(copy, utils.deepCopy(getmetatable(original)))
+    else -- number, string, boolean, etc
+        copy = original
     end
-    local jsonData = file:read('*a')
-    file:close()
-    local playerData, pos, err = json.decode(jsonData, 1, nil)
-    if err then
-        return nil, 'JSON decode error at position ' .. pos .. ': ' .. err
-    end
-    return playerData
+    return copy
 end
 
-return {
-    savePlayerData = savePlayerData,
-    loadPlayerData = loadPlayerData
-}
+return utils

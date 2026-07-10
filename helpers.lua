@@ -1,36 +1,45 @@
--- Helper functions for game utilities
+-- Helper functions for common operations
 
 local M = {}
 
--- Generates a random number between min and max
-function M.random_range(min, max)
+-- Function to generate a random number within a range
+-- @param min: the minimum value
+-- @param max: the maximum value
+-- @return: a random number between min and max
+function M.randomInRange(min, max)
     return math.random(min, max)
 end
 
--- Checks if a value exists in a table
-function M.table_contains(table, value)
-    for _, v in ipairs(table) do
-        if v == value then
+-- Function to shuffle a table
+-- @param t: the table to shuffle
+function M.shuffleTable(t)
+    for i = #t, 2, -1 do
+        local j = M.randomInRange(1, i)
+        t[i], t[j] = t[j], t[i]
+    end
+end
+
+-- Function to check if a value is in a table
+-- @param tbl: the table to check
+-- @param val: the value to find
+-- @return: true if value is found, otherwise false
+function M.valueExists(tbl, val)
+    for _, v in ipairs(tbl) do
+        if v == val then
             return true
         end
     end
     return false
 end
 
--- Shuffles a table in place
-function M.shuffle_table(t)
-    for i = #t, 2, -1 do
-        local j = math.random(i)
-        t[i], t[j] = t[j], t[i]
+-- Function to merge two tables
+-- @param tbl1: the first table
+-- @param tbl2: the second table
+function M.mergeTables(tbl1, tbl2)
+    for k, v in pairs(tbl2) do
+        tbl1[k] = v
     end
-end
-
--- Merges two tables
-function M.merge_tables(t1, t2)
-    for k, v in pairs(t2) do
-        t1[k] = v
-    end
-    return t1
+    return tbl1
 end
 
 return M

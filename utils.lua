@@ -1,34 +1,45 @@
--- Utility functions for web3 gaming
+local json = require('json')
 
-local utils = {}
-
--- Check if a value is a valid address
-function utils.isValidAddress(address)
-    return type(address) == 'string' and string.match(address, '^0x[%x]+$')
-end
-
--- Convert a hex string to decimal
-function utils.hexToDecimal(hex)
-    return tonumber(hex, 16)
-end
-
--- Format a timestamp to a readable string
-function utils.formatTimestamp(timestamp)
-    local date = os.date('*t', timestamp)
-    return string.format('%04d-%02d-%02d %02d:%02d:%02d', 
-        date.year, date.month, date.day, date.hour, date.min, date.sec)
-end
-
--- Generate a random ID
-function utils.randomID(length)
-    local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    local id = ''
-    for i = 1, length do
-        local index = math.random(1, #chars)
-        id = id .. chars:sub(index, index)
+local function validatePlayerData(data)
+    if not data.name or type(data.name) ~= 'string' then
+        return false, 'Invalid player name.'
     end
-    return id
+    if not data.score or type(data.score) ~= 'number' then
+        return false, 'Invalid player score.'
+    end
+    return true, nil
 end
 
--- Export the utils module
-return utils
+local function savePlayerData(filePath, playerData)
+    local isValid, err = validatePlayerData(playerData)
+    if not isValid then
+        return nil, err
+    end
+    local file, err = io.open(filePath, 'w')
+    if not file then
+        return nil, 'Could not open file: ' .. err
+    end
+    local jsonData = json.encode(playerData)
+    file:write(jsonData)
+    file:close()
+    return true
+end
+
+local function loadPlayerData(filePath)
+    local file, err = io.open(filePath, 'r')
+    if not file then
+        return nil, 'Could not open file: ' .. err
+    end
+    local jsonData = file:read('*a')
+    file:close()
+    local playerData, pos, err = json.decode(jsonData, 1, nil)
+    if err then
+        return nil, 'JSON decode error at position ' .. pos .. ': ' .. err
+    end
+    return playerData
+end
+
+return {
+    savePlayerData = savePlayerData,
+    loadPlayerData = loadPlayerData
+}

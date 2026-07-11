@@ -2,44 +2,54 @@
 
 local M = {}
 
--- Function to generate a random number within a range
--- @param min: the minimum value
--- @param max: the maximum value
--- @return: a random number between min and max
-function M.randomInRange(min, max)
-    return math.random(min, max)
+--- Get the string representation of a number
+-- @param num The number to convert
+-- @return A string representation of the number
+function M.numberToString(num)
+    return tostring(num)
 end
 
--- Function to shuffle a table
--- @param t: the table to shuffle
-function M.shuffleTable(t)
-    for i = #t, 2, -1 do
-        local j = M.randomInRange(1, i)
-        t[i], t[j] = t[j], t[i]
+--- Check if a value is within a range
+-- @param value The value to check
+-- @param min The minimum value
+-- @param max The maximum value
+-- @return True if value is within the range, false otherwise
+function M.isInRange(value, min, max)
+    return value >= min and value <= max
+end
+
+--- Shuffle an array
+-- @param array The array to shuffle
+-- @return A new array that is shuffled
+function M.shuffleArray(array)
+    local shuffled = {}
+    for i = 1, #array do
+        local randIndex = math.random(i, #array)
+        table.insert(shuffled, array[randIndex])
+        array[randIndex] = array[i]
     end
+    return shuffled
 end
 
--- Function to check if a value is in a table
--- @param tbl: the table to check
--- @param val: the value to find
--- @return: true if value is found, otherwise false
-function M.valueExists(tbl, val)
-    for _, v in ipairs(tbl) do
-        if v == val then
-            return true
+--- Deep clone an object
+-- @param obj The object to clone
+-- @return A deep clone of the object
+function M.deepClone(obj)
+    local lookup_table = {}
+    local function clone(tbl)
+        if type(tbl) ~= 'table' then
+            return tbl
+        elseif lookup_table[tbl] then
+            return lookup_table[tbl]
         end
+        local new_table = {}
+        lookup_table[tbl] = new_table
+        for key, value in pairs(tbl) do
+            new_table[clone(key)] = clone(value)
+        end
+        return new_table
     end
-    return false
-end
-
--- Function to merge two tables
--- @param tbl1: the first table
--- @param tbl2: the second table
-function M.mergeTables(tbl1, tbl2)
-    for k, v in pairs(tbl2) do
-        tbl1[k] = v
-    end
-    return tbl1
+    return clone(obj)
 end
 
 return M

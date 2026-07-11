@@ -1,39 +1,40 @@
--- Configuration module for web3 gaming
+--[[]]
+-- config.lua
+-- This module contains the configuration settings for the game.
 
---- @class Config
---- @field gameName string Name of the game
---- @field version string Version of the game
---- @field apiUrl string URL for the API
+local config = {}
 
-local Config = {}
+--- Game title.
+-- @type string
+config.title = "My Web3 Game"
 
---- Initializes the configuration with default values.
---- @return Config The initialized configuration
-function Config:new()
-    local instance = {
-        gameName = 'Web3Game',
-        version = '1.0.0',
-        apiUrl = 'https://api.web3game.com'
-    }
-    setmetatable(instance, self)
-    self.__index = self
-    return instance
+--- Version of the game.
+-- @type string
+config.version = "1.0.0"
+
+--- Maximum players allowed in the game.
+-- @type number
+config.maxPlayers = 100
+
+--- Default game settings.
+-- @type table
+config.defaultSettings = {
+    graphicsQuality = "high",
+    soundEnabled = true,
+    musicVolume = 0.5,
+}
+
+--- Network configuration.
+-- @type table
+config.network = {
+    host = "https://api.example.com",
+    port = 443,
+}
+
+--- Returns the game configuration table.
+-- @return table
+function config.getConfig()
+    return config
 end
 
---- Updates the API URL.
---- @param newUrl string The new API URL
-function Config:updateApiUrl(newUrl)
-    self.apiUrl = newUrl
-end
-
---- Get the current configuration as a table.
---- @return table A table representation of the configuration
-function Config:getConfig()
-    return {
-        gameName = self.gameName,
-        version = self.version,
-        apiUrl = self.apiUrl
-    }
-end
-
-return Config
+return config

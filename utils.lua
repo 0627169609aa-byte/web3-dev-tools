@@ -1,33 +1,43 @@
--- Utility functions for web3 gaming
+-- Utility functions for gaming data handling
 
-local utils = {}
+local M = {}
 
--- Function to generate a random ID
--- @param length: The length of the random ID
--- @return: Randomly generated ID as a string
-function utils.generateRandomId(length)
-    local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    local result = ''
-    for i = 1, length do
-        local index = math.random(1, #chars)
-        result = result .. chars:sub(index, index)
+-- Function to calculate player score based on actions
+-- @param baseScore: The initial score
+-- @param actions: A table of actions performed by the player
+-- @return: Calculated total score
+function M.calculateScore(baseScore, actions)
+    local totalScore = baseScore
+    
+    for _, action in ipairs(actions) do
+        if action.type == 'kill' then
+            totalScore = totalScore + (action.value or 1) * 10  -- Each kill gives 10 points
+        elseif action.type == 'collect' then
+            totalScore = totalScore + (action.value or 1) * 5   -- Each item collected gives 5 points
+        elseif action.type == 'completeQuest' then
+            totalScore = totalScore + (action.value or 1) * 20  -- Completing a quest gives 20 points
+        end
     end
-    return result
+    
+    return totalScore
 end
 
--- Function to convert a timestamp to a formatted date
--- @param timestamp: The timestamp to format
--- @return: Formatted date string
-function utils.formatTimestamp(timestamp)
-    local date = os.date('*t', timestamp)
-    return string.format('%02d-%02d-%04d %02d:%02d:%02d', date.day, date.month, date.year, date.hour, date.min, date.sec)
+-- Function to normalize player statistics
+-- @param stats: A table of player statistics
+-- @return: Normalized statistics table
+function M.normalizeStats(stats)
+    local total = 0
+    local normalized = {}
+
+    for _, stat in pairs(stats) do
+        total = total + stat
+    end
+
+    for key, stat in pairs(stats) do
+        normalized[key] = stat / total  -- Normalize each stat based on total
+    end
+
+    return normalized
 end
 
--- Function to validate an Ethereum address
--- @param address: The Ethereum address to validate
--- @return: Boolean indicating if the address is valid
-function utils.isValidEthereumAddress(address)
-    return string.match(address, '^0x[a-fA-F0-9]{40}$') ~= nil
-end
-
-return utils
+return M

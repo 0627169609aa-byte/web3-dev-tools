@@ -1,43 +1,47 @@
--- Utility functions for gaming data handling
+-- Utility functions for web3 gaming
 
-local M = {}
-
--- Function to calculate player score based on actions
--- @param baseScore: The initial score
--- @param actions: A table of actions performed by the player
--- @return: Calculated total score
-function M.calculateScore(baseScore, actions)
-    local totalScore = baseScore
-    
-    for _, action in ipairs(actions) do
-        if action.type == 'kill' then
-            totalScore = totalScore + (action.value or 1) * 10  -- Each kill gives 10 points
-        elseif action.type == 'collect' then
-            totalScore = totalScore + (action.value or 1) * 5   -- Each item collected gives 5 points
-        elseif action.type == 'completeQuest' then
-            totalScore = totalScore + (action.value or 1) * 20  -- Completing a quest gives 20 points
-        end
-    end
-    
-    return totalScore
+---
+-- Checks if a given address is valid
+-- @param address string: The Ethereum address to validate
+-- @return boolean: True if valid, false otherwise
+---
+local function isValidAddress(address)
+    return string.match(address, '^0x[a-fA-F0-9]{40}') ~= nil
 end
 
--- Function to normalize player statistics
--- @param stats: A table of player statistics
--- @return: Normalized statistics table
-function M.normalizeStats(stats)
-    local total = 0
-    local normalized = {}
-
-    for _, stat in pairs(stats) do
-        total = total + stat
-    end
-
-    for key, stat in pairs(stats) do
-        normalized[key] = stat / total  -- Normalize each stat based on total
-    end
-
-    return normalized
+---
+-- Converts a hexadecimal value to decimal
+-- @param hex string: The hexadecimal string to convert
+-- @return number: The decimal representation of the hexadecimal value
+---
+local function hexToDecimal(hex)
+    return tonumber(hex, 16)
 end
 
-return M
+---
+-- Converts a decimal value to hexadecimal
+-- @param decimal number: The decimal number to convert
+-- @return string: The hexadecimal representation of the decimal value
+---
+local function decimalToHex(decimal)
+    return string.format('0x%x', decimal)
+end
+
+---
+-- Generates a random unique game ID
+-- @return string: A unique game ID
+---
+local function generateGameID()
+    local id = ''
+    for i = 1, 10 do
+        id = id .. string.char(math.random(48, 122))
+    end
+    return id
+end
+
+return {
+    isValidAddress = isValidAddress,
+    hexToDecimal = hexToDecimal,
+    decimalToHex = decimalToHex,
+    generateGameID = generateGameID
+}

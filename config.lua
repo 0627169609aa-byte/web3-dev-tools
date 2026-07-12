@@ -1,40 +1,36 @@
---[[]]
--- config.lua
--- This module contains the configuration settings for the game.
+-- Configuration loader with default values
 
-local config = {}
+local json = require('json')
 
---- Game title.
--- @type string
-config.title = "My Web3 Game"
+local Config = {}
 
---- Version of the game.
--- @type string
-config.version = "1.0.0"
-
---- Maximum players allowed in the game.
--- @type number
-config.maxPlayers = 100
-
---- Default game settings.
--- @type table
-config.defaultSettings = {
-    graphicsQuality = "high",
-    soundEnabled = true,
-    musicVolume = 0.5,
+-- Default configuration values
+Config.defaults = {
+    serverAddress = 'localhost',
+    serverPort = 8080,
+    enableDebug = false,
+    maxPlayers = 100,
 }
 
---- Network configuration.
--- @type table
-config.network = {
-    host = "https://api.example.com",
-    port = 443,
-}
+-- Function to load configuration from a JSON file
+function Config.load(filename)
+    local file, err = io.open(filename, 'r')
+    if err then
+        print('Error opening config file: ' .. err)
+        return Config.defaults
+    end
 
---- Returns the game configuration table.
--- @return table
-function config.getConfig()
-    return config
+    local content = file:read('*a')
+    file:close()
+    local configData = json.decode(content)
+
+    -- Merging defaults with loaded configuration
+    for key, value in pairs(Config.defaults) do
+        if configData[key] == nil then
+            configData[key] = value
+        end
+    end
+    return configData
 end
 
-return config
+return Config

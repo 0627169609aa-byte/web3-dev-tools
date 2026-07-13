@@ -1,31 +1,29 @@
--- Main processing loop for the game
+-- Initialize the gaming environment
 
-local function isValidInput(input)
-    if type(input) ~= "string" then
-        return false, "Input must be a string."
-    end
-    if input:match("^[%w%s]+$") == nil then
-        return false, "Input contains invalid characters."
-    end
-    return true
+local function setupGameEnvironment()
+    print("Setting up game environment...")
+    -- Game initialization logic here
 end
 
-local function processInput(input)
-    local valid, err = isValidInput(input)
-    if not valid then
-        print(err)
-        return
-    end
-    -- Process the valid input
-    print("Processing input: " .. input)
+local function loadAssets()
+    print("Loading game assets...")
+    -- Asset loading logic here
 end
 
-local function main()
-    while true do
-        print("Please enter your command:")
-        local input = io.read()
-        processInput(input)
-    end
+local function startGameLoop()
+    print("Starting game loop...")
+    -- Main game loop logic here
 end
 
-main()
+local function initializeGame()
+    setupGameEnvironment()
+    loadAssets()
+    startGameLoop()
+end
+
+-- Main call to run the game
+initializeGame()
+
+return {
+    initializeGame = initializeGame
+}

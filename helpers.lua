@@ -1,55 +1,34 @@
--- Helper functions for common operations
+-- Configuration loader with defaults
 
-local M = {}
+local json = require('json')
 
---- Get the string representation of a number
--- @param num The number to convert
--- @return A string representation of the number
-function M.numberToString(num)
-    return tostring(num)
-end
+local defaultConfig = {
+    width = 800,
+    height = 600,
+    fullscreen = false,
+    volume = 0.5,
+    resolution = 'high'
+}
 
---- Check if a value is within a range
--- @param value The value to check
--- @param min The minimum value
--- @param max The maximum value
--- @return True if value is within the range, false otherwise
-function M.isInRange(value, min, max)
-    return value >= min and value <= max
-end
-
---- Shuffle an array
--- @param array The array to shuffle
--- @return A new array that is shuffled
-function M.shuffleArray(array)
-    local shuffled = {}
-    for i = 1, #array do
-        local randIndex = math.random(i, #array)
-        table.insert(shuffled, array[randIndex])
-        array[randIndex] = array[i]
+local function loadConfig(filePath)
+    local file = io.open(filePath, 'r')
+    if not file then
+        return defaultConfig  -- Return defaults if config file doesn't exist
     end
-    return shuffled
-end
 
---- Deep clone an object
--- @param obj The object to clone
--- @return A deep clone of the object
-function M.deepClone(obj)
-    local lookup_table = {}
-    local function clone(tbl)
-        if type(tbl) ~= 'table' then
-            return tbl
-        elseif lookup_table[tbl] then
-            return lookup_table[tbl]
+    local content = file:read('*a')
+    file:close()
+
+    local userConfig = json.decode(content)
+    for key, value in pairs(defaultConfig) do
+        if userConfig[key] == nil then
+            userConfig[key] = value  -- Set default if not provided
         end
-        local new_table = {}
-        lookup_table[tbl] = new_table
-        for key, value in pairs(tbl) do
-            new_table[clone(key)] = clone(value)
-        end
-        return new_table
     end
-    return clone(obj)
+
+    return userConfig
 end
 
-return M
+return {
+    loadConfig = loadConfig
+}

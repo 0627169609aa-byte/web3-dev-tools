@@ -1,36 +1,43 @@
--- Configuration loader with default values
+-- Configuration loader with defaults
 
 local json = require('json')
 
 local Config = {}
 
 -- Default configuration values
-Config.defaults = {
-    serverAddress = 'localhost',
-    serverPort = 8080,
-    enableDebug = false,
-    maxPlayers = 100,
+local defaultConfig = {
+    server = 'localhost',
+    port = 8080,
+    environment = 'development',
+    gameSettings = {
+        maxPlayers = 100,
+        gameMode = 'casual'
+    }
 }
 
--- Function to load configuration from a JSON file
-function Config.load(filename)
-    local file, err = io.open(filename, 'r')
-    if err then
-        print('Error opening config file: ' .. err)
-        return Config.defaults
+-- Function to load configuration from a file
+function Config.loadConfig(filePath)
+    local configFile = io.open(filePath, 'r')
+    if not configFile then
+        print('No config file found, using defaults.')
+        return defaultConfig
     end
+    local content = configFile:read('*a')
+    configFile:close()
+    local customConfig = json.decode(content)
+    return mergeConfigs(defaultConfig, customConfig)
+end
 
-    local content = file:read('*a')
-    file:close()
-    local configData = json.decode(content)
-
-    -- Merging defaults with loaded configuration
-    for key, value in pairs(Config.defaults) do
-        if configData[key] == nil then
-            configData[key] = value
+-- Function to merge user configuration with defaults
+local function mergeConfigs(defaults, userConfig)
+    for key, value in pairs(userConfig) do
+        if type(value) == 'table' and type(defaults[key]) == 'table' then
+            defaults[key] = mergeConfigs(defaults[key], value)
+        else
+            defaults[key] = value
         end
     end
-    return configData
+    return defaults
 end
 
 return Config

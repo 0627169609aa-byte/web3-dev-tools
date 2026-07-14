@@ -1,38 +1,47 @@
--- Configuration loader with defaults
+-- Configuration Loader with Defaults
 
 local json = require('json')
 
 local Config = {}
 
 -- Default configuration values
-local defaultConfig = {
-    server = 'localhost',
-    port = 8080,
-    environment = 'development',
-    gameSettings = {
-        maxPlayers = 100,
-        gameMode = 'casual'
+Config.defaults = {
+    database = {
+        host = 'localhost',
+        port = 3306,
+        user = 'root',
+        password = '',
+        name = 'game_db'
+    },
+    server = {
+        host = '0.0.0.0',
+        port = 8080
+    },
+    logging = {
+        level = 'info',
+        file = 'app.log'
     }
 }
 
--- Function to load configuration from a file
-function Config.loadConfig(filePath)
-    local configFile = io.open(filePath, 'r')
-    if not configFile then
-        print('No config file found, using defaults.')
-        return defaultConfig
+-- Load configuration from a JSON file
+function Config.load(file_path)
+    local file = io.open(file_path, 'r')
+    if not file then
+        print('Configuration file not found, loading defaults.')
+        return Config.defaults
     end
-    local content = configFile:read('*a')
-    configFile:close()
-    local customConfig = json.decode(content)
-    return mergeConfigs(defaultConfig, customConfig)
+    local content = file:read('*a')
+    file:close()
+
+    local user_config = json.decode(content)
+    return Config.merge(Config.defaults, user_config)
 end
 
--- Function to merge user configuration with defaults
-local function mergeConfigs(defaults, userConfig)
-    for key, value in pairs(userConfig) do
+-- Merge default values with user-defined values
+function Config.merge(defaults, user_defined)
+    for key, value in pairs(user_defined) do
         if type(value) == 'table' and type(defaults[key]) == 'table' then
-            defaults[key] = mergeConfigs(defaults[key], value)
+            defaults[key] = Config.merge(defaults[key], value)
         else
             defaults[key] = value
         end

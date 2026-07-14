@@ -1,47 +1,38 @@
--- Utility functions for web3 gaming
+-- Input validation utility functions
 
----
--- Checks if a given address is valid
--- @param address string: The Ethereum address to validate
--- @return boolean: True if valid, false otherwise
----
-local function isValidAddress(address)
-    return string.match(address, '^0x[a-fA-F0-9]{40}') ~= nil
-end
-
----
--- Converts a hexadecimal value to decimal
--- @param hex string: The hexadecimal string to convert
--- @return number: The decimal representation of the hexadecimal value
----
-local function hexToDecimal(hex)
-    return tonumber(hex, 16)
-end
-
----
--- Converts a decimal value to hexadecimal
--- @param decimal number: The decimal number to convert
--- @return string: The hexadecimal representation of the decimal value
----
-local function decimalToHex(decimal)
-    return string.format('0x%x', decimal)
-end
-
----
--- Generates a random unique game ID
--- @return string: A unique game ID
----
-local function generateGameID()
-    local id = ''
-    for i = 1, 10 do
-        id = id .. string.char(math.random(48, 122))
+local function isValidInput(input)
+    -- Check if input is not nil and is a string
+    if input == nil or type(input) ~= 'string' then
+        return false, 'Input must be a non-nil string'
     end
-    return id
+    -- Check if input length is within acceptable bounds
+    if #input < 3 or #input > 50 then
+        return false, 'Input length must be between 3 and 50 characters'
+    end
+    return true
+end
+
+local function processInput(input)
+    local isValid, errMsg = isValidInput(input)
+    if not isValid then
+        print('Input error:', errMsg)
+        return
+    end
+    -- Process the valid input
+    -- Here you can add your game-specific logic, such as storing player names
+    print('Processing input:', input)
+end
+
+-- Main processing loop example
+local function main()
+    local inputs = {'Player1', 'Pl', nil, 'This is a test input exceeding length limit because it is too long', 'ValidPlayer'}
+    for _, input in ipairs(inputs) do
+        processInput(input)
+    end
 end
 
 return {
-    isValidAddress = isValidAddress,
-    hexToDecimal = hexToDecimal,
-    decimalToHex = decimalToHex,
-    generateGameID = generateGameID
+    isValidInput = isValidInput,
+    processInput = processInput,
+    main = main
 }

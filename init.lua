@@ -1,42 +1,39 @@
---[[
-    Initializes the game environment with necessary parameters and configurations.
-    @module init
-]]
+-- Utility function to perform network operations with retry logic
 
--- Define game configuration table
----@class GameConfig
----@field public gameName string
----@field public maxPlayers integer
----@field public startLevel integer
-local GameConfig = {
-    gameName = "Web3 Adventure",
-    maxPlayers = 50,
-    startLevel = 1
-}
+local http = require('socket.http')
+local ltn12 = require('ltn12')
 
---[[
-    Initializes the main components of the game.
-    @function initializeGame
-    @return boolean success
-]]
-local function initializeGame()
-    print("Initializing game: " .. GameConfig.gameName)
-    -- Additional initialization logic goes here
-    return true
+local function perform_request(url, max_retries) 
+    local retries = 0
+    local response_body = {}
+
+    while retries < max_retries do
+        local result, status_code = http.request({
+            url = url,
+            sink = ltn12.sink.table(response_body)
+        })
+
+        if status_code == 200 then
+            return table.concat(response_body)
+        else
+            print(string.format("Request failed with status: %d. Retrying...", status_code))
+            retries = retries + 1
+        end
+    end
+
+    error(string.format("Failed to perform request after %d attempts", max_retries))
 end
 
---[[
-    Starts the game loop after initialization.
-    @function startGame
-]]
-local function startGame()
-    if initializeGame() then
-        print("Game started successfully!")
-        -- Game loop logic would go here
+local function main() 
+    local url = "https://api.example.com/data"
+    local max_retries = 5
+
+    local success, result = pcall(perform_request, url, max_retries)
+    if success then
+        print("Response received:", result)
     else
-        print("Failed to start the game.")
+        print("Error occurred:", result)
     end
 end
 
--- Run the game start function
-startGame()
+main()

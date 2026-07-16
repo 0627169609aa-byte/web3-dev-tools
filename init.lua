@@ -1,39 +1,31 @@
--- Utility function to perform network operations with retry logic
-
+-- Function to perform a network request with retry logic
 local http = require('socket.http')
-local ltn12 = require('ltn12')
 
-local function perform_request(url, max_retries) 
-    local retries = 0
-    local response_body = {}
+local function fetchWithRetry(url, retries, delay)
+    local attempts = 0
+    local response, code
 
-    while retries < max_retries do
-        local result, status_code = http.request({
-            url = url,
-            sink = ltn12.sink.table(response_body)
-        })
-
-        if status_code == 200 then
-            return table.concat(response_body)
+    while attempts < retries do
+        response, code = http.request(url)
+        if code == 200 then
+            return response
         else
-            print(string.format("Request failed with status: %d. Retrying...", status_code))
-            retries = retries + 1
+            attempts = attempts + 1
+            print(string.format('Attempt %d failed. Retrying in %d seconds...\n', attempts, delay))
+            os.execute('sleep ' .. delay)
         end
     end
 
-    error(string.format("Failed to perform request after %d attempts", max_retries))
+    error('Failed to fetch data after ' .. retries .. ' retries')
 end
 
-local function main() 
-    local url = "https://api.example.com/data"
-    local max_retries = 5
-
-    local success, result = pcall(perform_request, url, max_retries)
-    if success then
-        print("Response received:", result)
-    else
-        print("Error occurred:", result)
-    end
+-- Example usage
+local url = 'https://api.example.com/data'
+local data, err = fetchWithRetry(url, 5, 2)
+if data then
+    print('Data fetched successfully!')
+else
+    print('Error fetching data: ' .. err)
 end
 
-main()
+return { fetchWithRetry = fetchWithRetry }

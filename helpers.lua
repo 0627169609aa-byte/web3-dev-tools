@@ -1,34 +1,40 @@
--- Configuration loader with defaults
+-- Helper functions for web3 gaming
 
-local json = require('json')
+local Helpers = {}
 
-local defaultConfig = {
-    width = 800,
-    height = 600,
-    fullscreen = false,
-    volume = 0.5,
-    resolution = 'high'
-}
-
-local function loadConfig(filePath)
-    local file = io.open(filePath, 'r')
-    if not file then
-        return defaultConfig  -- Return defaults if config file doesn't exist
-    end
-
-    local content = file:read('*a')
-    file:close()
-
-    local userConfig = json.decode(content)
-    for key, value in pairs(defaultConfig) do
-        if userConfig[key] == nil then
-            userConfig[key] = value  -- Set default if not provided
-        end
-    end
-
-    return userConfig
+--- Check if a table is empty
+-- @param tbl Table to check
+-- @return Boolean indicating emptiness
+function Helpers.isEmpty(tbl)
+    return next(tbl) == nil
 end
 
-return {
-    loadConfig = loadConfig
-}
+--- Generate a random number within a range
+-- @param min Minimum number
+-- @param max Maximum number
+-- @return Random number
+function Helpers.random(min, max)
+    math.randomseed(os.time())  -- Seed the random number generator
+    return math.random(min, max)
+end
+
+--- Convert a hex string to a byte array
+-- @param hex Hex string to convert
+-- @return Byte array
+function Helpers.hexToBytes(hex)
+    local bytes = {}
+    for i = 1, #hex, 2 do
+        local byte = tonumber(hex:sub(i, i + 1), 16)
+        table.insert(bytes, byte)
+    end
+    return bytes
+end
+
+--- Delay execution for a specified duration
+-- @param seconds Duration to wait
+function Helpers.delay(seconds)
+    local start = os.clock()
+    while os.clock() - start < seconds do end
+end
+
+return Helpers

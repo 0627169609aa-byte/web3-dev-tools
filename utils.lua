@@ -1,51 +1,41 @@
--- Utility functions for web3 gaming
+-- Logger setup with rotation for web3-dev-tools
+local log = require('log')
+local lfs = require('lfs')
 
-local utils = {}
+local Logger = {}
+Logger.__index = Logger
 
---- Check if a value is nil or empty
--- @param value: value to check
--- @return boolean: true if nil or empty, false otherwise
-function utils.isNilOrEmpty(value)
-    return value == nil or (type(value) == 'string' and value:match('^%s*$'))
+-- Initialize a new logger
+function Logger:new(logfile, maxSize, maxBackups)
+    local obj = setmetatable({}, Logger)
+    obj.logfile = logfile or 'application.log'
+    obj.maxSize = maxSize or 5 * 1024 * 1024 -- 5MB
+    obj.maxBackups = maxBackups or 5
+    return obj
 end
 
---- Safely retrieve a value from a table
--- @param tbl: the table to retrieve from
--- @param key: the key to look up
--- @param default: default value to return if key is not found
--- @return any: the value associated with the key or default
-function utils.safeGet(tbl, key, default)
-    if type(tbl) ~= 'table' then
-        return default
-    end
-    return tbl[key] ~= nil and tbl[key] or default
-end
-
---- Function to ensure the game settings are valid
--- @param settings: table containing game settings
--- @return boolean: true if valid, false otherwise
-function utils.validateSettings(settings)
-    if utils.isNilOrEmpty(settings) then
-        return false
-    end
-    local requiredKeys = {'playerName', 'level', 'score'}
-    for _, key in ipairs(requiredKeys) do
-        if utils.isNilOrEmpty(settings[key]) then
-            return false
+-- Check if the log file needs rotation
+function Logger:rotateLogs()
+    local fileAttr = lfs.attributes(self.logfile)
+    if fileAttr and fileAttr.size >= self.maxSize then
+        -- Rotate log files
+        for i = self.maxBackups, 1, -1 do
+            local oldName = self.logfile .. '.' .. i
+            local newName = self.logfile .. '.' .. (i + 1)
+            if lfs.attributes(oldName) then
+                os.rename(oldName, newName)
+            end
         end
+        os.rename(self.logfile, self.logfile .. '.1')
     end
-    return true
 end
 
---- Log error messages with context
--- @param message: error message to log
--- @param context: optional context to provide additional information
-function utils.logError(message, context)
-    local formattedMessage = 'Error: ' .. message
-    if context then
-        formattedMessage = formattedMessage .. ' | Context: ' .. tostring(context)
-    end
-    print(formattedMessage)
+-- Log a message
+function Logger:log(message)
+    self:rotateLogs()
+    local file = io.open(self.logfile, 'a')
+    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+    file:close()
 end
 
-return utils
+return Logger

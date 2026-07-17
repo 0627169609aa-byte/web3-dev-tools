@@ -1,41 +1,38 @@
--- Logger setup with rotation for web3-dev-tools
-local log = require('log')
-local lfs = require('lfs')
+-- Utility functions for network operations
 
-local Logger = {}
-Logger.__index = Logger
+local http = require('socket.http')
+local ltn12 = require('ltn12')
 
--- Initialize a new logger
-function Logger:new(logfile, maxSize, maxBackups)
-    local obj = setmetatable({}, Logger)
-    obj.logfile = logfile or 'application.log'
-    obj.maxSize = maxSize or 5 * 1024 * 1024 -- 5MB
-    obj.maxBackups = maxBackups or 5
-    return obj
-end
+local function retryNetworkOperation(operation, retries, delay)
+    local attempts = 0
+    local success, result
 
--- Check if the log file needs rotation
-function Logger:rotateLogs()
-    local fileAttr = lfs.attributes(self.logfile)
-    if fileAttr and fileAttr.size >= self.maxSize then
-        -- Rotate log files
-        for i = self.maxBackups, 1, -1 do
-            local oldName = self.logfile .. '.' .. i
-            local newName = self.logfile .. '.' .. (i + 1)
-            if lfs.attributes(oldName) then
-                os.rename(oldName, newName)
-            end
+    while attempts < retries do
+        success, result = pcall(operation)
+        if success then
+            return result
         end
-        os.rename(self.logfile, self.logfile .. '.1')
+        attempts = attempts + 1
+        print('Retrying... Attempt ' .. attempts)
+        os.execute('sleep ' .. delay)
     end
+
+    error('Max retries reached')
 end
 
--- Log a message
-function Logger:log(message)
-    self:rotateLogs()
-    local file = io.open(self.logfile, 'a')
-    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-    file:close()
+local function fetchData(url)
+    local response_body = {}
+    local res, code, response_headers, status = http.request{
+        url = url,
+        sink = ltn12.sink.table(response_body)
+    }
+    if code ~= 200 then
+        error('HTTP request failed with code ' .. tostring(code))
+    end
+    return table.concat(response_body)
 end
 
-return Logger
+return {
+    retryNetworkOperation = retryNetworkOperation,
+    fetchData = fetchData
+}

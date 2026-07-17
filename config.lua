@@ -1,52 +1,35 @@
--- Configuration Loader with Defaults
-
-local json = require('json')
+-- Configuration settings for the game
 
 local Config = {}
 
--- Default configuration values
-Config.defaults = {
-    database = {
-        host = 'localhost',
-        port = 3306,
-        user = 'root',
-        password = '',
-        name = 'game_db'
+--- Game settings with type annotations
+-- @type Config
+Config.settings = {
+    volume = 1.0,  -- volume level (0.0 to 1.0)
+    difficulty = 'normal',  -- game difficulty level
+    resolution = {
+        width = 1920,  -- screen width
+        height = 1080  -- screen height
     },
-    server = {
-        host = '0.0.0.0',
-        port = 8080
-    },
-    logging = {
-        level = 'info',
-        file = 'app.log'
-    }
+    fullscreen = false,  -- fullscreen mode
 }
 
--- Load configuration from a JSON file
-function Config.load(file_path)
-    local file = io.open(file_path, 'r')
-    if not file then
-        print('Configuration file not found, loading defaults.')
-        return Config.defaults
-    end
-    local content = file:read('*a')
-    file:close()
-
-    local user_config = json.decode(content)
-    return Config.merge(Config.defaults, user_config)
+--- Function to get a setting
+-- @param key string: the setting key to retrieve
+-- @return any: the value of the requested setting
+function Config.getSetting(key)
+    return Config.settings[key]
 end
 
--- Merge default values with user-defined values
-function Config.merge(defaults, user_defined)
-    for key, value in pairs(user_defined) do
-        if type(value) == 'table' and type(defaults[key]) == 'table' then
-            defaults[key] = Config.merge(defaults[key], value)
-        else
-            defaults[key] = value
-        end
+--- Function to set a setting
+-- @param key string: the setting key to modify
+-- @param value any: the new value to set
+function Config.setSetting(key, value)
+    if Config.settings[key] ~= nil then
+        Config.settings[key] = value
+    else
+        error('Invalid setting key: ' .. key)
     end
-    return defaults
 end
 
 return Config

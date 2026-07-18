@@ -1,38 +1,44 @@
--- Utility functions for network operations
+-- Utility functions for handling gaming data
 
-local http = require('socket.http')
-local ltn12 = require('ltn12')
+local utils = {}
 
-local function retryNetworkOperation(operation, retries, delay)
-    local attempts = 0
-    local success, result
-
-    while attempts < retries do
-        success, result = pcall(operation)
-        if success then
-            return result
+--- Function to validate player data
+-- @param playerData table: The player data to validate.
+-- @return boolean: True if valid, false otherwise.
+function utils.validatePlayerData(playerData)
+    if type(playerData) ~= "table" then
+        return false
+    end
+    local requiredFields = {"id", "name", "score"}
+    for _, field in ipairs(requiredFields) do
+        if playerData[field] == nil then
+            return false
         end
-        attempts = attempts + 1
-        print('Retrying... Attempt ' .. attempts)
-        os.execute('sleep ' .. delay)
     end
-
-    error('Max retries reached')
+    return true
 end
 
-local function fetchData(url)
-    local response_body = {}
-    local res, code, response_headers, status = http.request{
-        url = url,
-        sink = ltn12.sink.table(response_body)
-    }
-    if code ~= 200 then
-        error('HTTP request failed with code ' .. tostring(code))
+--- Function to calculate average score
+-- @param players table: A table of player data.
+-- @return number: The average score of players.
+function utils.calculateAverageScore(players)
+    local totalScore = 0
+    local playerCount = #players
+    
+    for _, player in ipairs(players) do
+        if player.score then
+            totalScore = totalScore + player.score
+        end
     end
-    return table.concat(response_body)
+    return playerCount > 0 and totalScore / playerCount or 0
 end
 
-return {
-    retryNetworkOperation = retryNetworkOperation,
-    fetchData = fetchData
-}
+--- Function to generate a unique player ID
+-- @return string: A unique player ID.
+function utils.generatePlayerID()
+    local timestamp = os.time()
+    local randomSuffix = math.random(1000, 9999)
+    return string.format("player_%d_%d", timestamp, randomSuffix)
+end
+
+return utils

@@ -1,44 +1,60 @@
--- Core module for web3 gaming utilities
+-- Core Module for Web3 Gaming Utility
 
-local core = {}
+---
+-- Returns the balance of a given address in a specified token
+-- @param address string: The wallet address to query
+-- @param tokenContract string: The contract address of the token
+-- @return number: The balance of the token for the wallet
+---
+local function getTokenBalance(address, tokenContract)
+    local balance = 0  -- Initial balance
 
--- Initialize game settings
-function core.initializeGameSettings(settings)
-    local gameSettings = {}
-    gameSettings.title = settings.title or 'Default Game'
-    gameSettings.maxPlayers = settings.maxPlayers or 4
-    gameSettings.allowSpectators = settings.allowSpectators or false
-    return gameSettings
-end
+    -- Simulated call to the token contract to get the balance
+    local success, result = pcall(function() 
+        -- Placeholder for actual contract interaction
+        return math.random(0, 10000)  -- Mocked balance
+    end)
 
--- Create player profile
-function core.createPlayerProfile(name, id)
-    local player = {}
-    player.name = name
-    player.id = id
-    player.score = 0
-    player.inventory = {}
-    return player
-end
-
--- Update player score
-function core.updatePlayerScore(player, points)
-    if player and type(points) == 'number' then
-        player.score = player.score + points
-        return player.score
+    if success and result then
+        balance = result
     else
-        error('Invalid player or points')
+        print("Error getting balance: " .. tostring(result))
     end
+
+    return balance
 end
 
--- Add item to player inventory
-function core.addItemToInventory(player, item)
-    if player and item then
-        table.insert(player.inventory, item)
-        return player.inventory
+---
+-- Initiates a transaction from one address to another
+-- @param fromAddress string: The sender's wallet address
+-- @param toAddress string: The recipient's wallet address
+-- @param amount number: The amount of tokens to send
+-- @param tokenContract string: The contract address of the token
+-- @return boolean: True if the transaction was successful
+---
+local function transferTokens(fromAddress, toAddress, amount, tokenContract)
+    local success = false
+
+    -- Simulated transaction processing
+    local txResult = pcall(function() 
+        -- Placeholder for actual transfer logic
+        return true  -- Mocked successful transaction
+    end)
+
+    if txResult then
+        success = txResult
     else
-        error('Invalid player or item')
+        print("Transaction failed: " .. tostring(txResult))
     end
+
+    return success
 end
 
-return core
+---
+-- Exposes the public API of the module
+-- @return table: The methods available for use
+---
+return {
+    getTokenBalance = getTokenBalance,
+    transferTokens = transferTokens
+}

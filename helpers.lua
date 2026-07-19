@@ -1,40 +1,31 @@
--- Helper functions for web3 gaming
+-- Helper functions for input validation in gaming
 
-local Helpers = {}
+local M = {}
 
---- Check if a table is empty
--- @param tbl Table to check
--- @return Boolean indicating emptiness
-function Helpers.isEmpty(tbl)
-    return next(tbl) == nil
+-- Validate if input is a positive integer
+function M.isPositiveInteger(input)
+    return type(input) == "number" and input > 0 and math.floor(input) == input
 end
 
---- Generate a random number within a range
--- @param min Minimum number
--- @param max Maximum number
--- @return Random number
-function Helpers.random(min, max)
-    math.randomseed(os.time())  -- Seed the random number generator
-    return math.random(min, max)
+-- Validate if input is a non-empty string
+function M.isNonEmptyString(input)
+    return type(input) == "string" and #input > 0
 end
 
---- Convert a hex string to a byte array
--- @param hex Hex string to convert
--- @return Byte array
-function Helpers.hexToBytes(hex)
-    local bytes = {}
-    for i = 1, #hex, 2 do
-        local byte = tonumber(hex:sub(i, i + 1), 16)
-        table.insert(bytes, byte)
+-- Main processing loop
+function M.processInput(playerInput)
+    -- Validate input before processing
+    if not M.isPositiveInteger(playerInput.level) then
+        return "Invalid level: must be a positive integer"
     end
-    return bytes
+
+    if not M.isNonEmptyString(playerInput.name) then
+        return "Invalid name: must be a non-empty string"
+    end
+
+    -- Proceed with processing if inputs are valid
+    print(string.format("Processing player: %s with level: %d", playerInput.name, playerInput.level))
+    return "Input processed successfully"
 end
 
---- Delay execution for a specified duration
--- @param seconds Duration to wait
-function Helpers.delay(seconds)
-    local start = os.clock()
-    while os.clock() - start < seconds do end
-end
-
-return Helpers
+return M

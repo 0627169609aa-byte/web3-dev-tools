@@ -1,35 +1,40 @@
--- Configuration settings for the game
+local log = require('logrotate')
 
-local Config = {}
+local function setup_logger()
+    local logger = log:new('/var/log/web3-game.log', {
+        size = '10MB',
+        backups = 5,
+        level = 'info',
+    })
 
---- Game settings with type annotations
--- @type Config
-Config.settings = {
-    volume = 1.0,  -- volume level (0.0 to 1.0)
-    difficulty = 'normal',  -- game difficulty level
-    resolution = {
-        width = 1920,  -- screen width
-        height = 1080  -- screen height
-    },
-    fullscreen = false,  -- fullscreen mode
-}
+    function logger:info(message)
+        self:write('INFO: ' .. message)
+    end
 
---- Function to get a setting
--- @param key string: the setting key to retrieve
--- @return any: the value of the requested setting
-function Config.getSetting(key)
-    return Config.settings[key]
+    function logger:error(message)
+        self:write('ERROR: ' .. message)
+    end
+
+    function logger:warning(message)
+        self:write('WARNING: ' .. message)
+    end
+
+    return logger
 end
 
---- Function to set a setting
--- @param key string: the setting key to modify
--- @param value any: the new value to set
-function Config.setSetting(key, value)
-    if Config.settings[key] ~= nil then
-        Config.settings[key] = value
-    else
-        error('Invalid setting key: ' .. key)
+local logger = setup_logger()
+
+function log_message(level, message)
+    if level == 'info' then
+        logger:info(message)
+    elseif level == 'error' then
+        logger:error(message)
+    elseif level == 'warning' then
+        logger:warning(message)
     end
 end
 
-return Config
+return {
+    log_message = log_message,
+    logger = logger,
+}

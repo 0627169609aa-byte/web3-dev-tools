@@ -1,44 +1,54 @@
 # web3-dev-tools
 
-web3-dev-tools is a powerful suite of tools designed for game developers seeking to integrate blockchain technology into their Lua-based gaming projects. With a focus on seamless usability and robust functionality, this toolkit empowers developers to create innovative and monetizable gaming experiences in the Web3 ecosystem.
+web3-dev-tools is a Lua-based toolkit designed for seamless development of decentralized gaming applications. This project aims to streamline the integration of blockchain technology with gaming environments, allowing developers to create immersive experiences while harnessing the advantages of Web3.
 
 ## Features
 
-- **Smart Contract Interaction**: Easily deploy and interact with Ethereum-compatible smart contracts directly from your Lua scripts.
-- **Wallet Management**: Simplify wallet integration and management with built-in support for popular wallet standards, including MetaMask and WalletConnect.
-- **Real-time Blockchain Data**: Access real-time on-chain data through a user-friendly API, enhancing game mechanics and player experiences.
-- **Rich Documentation**: Comprehensive guides and examples for developers at every skill level to quickly start building and integrating Web3 features.
+- **Blockchain Integration**: Effortlessly connect your games with blockchain networks using simple Lua functions to manage smart contracts and transactions.
+- **User Wallet Support**: Built-in support for various crypto wallets, enabling players to log in and manage their assets securely within the game.
+- **On-chain Assets Management**: Create, trade, and manage in-game assets as NFTs through an intuitive API, ensuring true ownership for players.
+- **Real-time Analytics**: Monitor player interactions and asset transactions with in-depth analytics tools to help refine gameplay and enhance player engagement.
 
 ## Installation
 
-To install web3-dev-tools, ensure you have Lua 5.3 or higher installed. Then, run the following commands in your terminal:
+To install `web3-dev-tools`, clone the repository and install the dependencies:
 
 ```bash
 git clone https://github.com/Developer/web3-dev-tools.git
 cd web3-dev-tools
-luarocks install
+luarocks install .
 ```
+
+Ensure you have [LuaRocks](https://luarocks.org/) installed, as it's required to manage Lua modules.
 
 ## Basic Usage Example
 
-Here is a simple example demonstrating how to interact with a smart contract using web3-dev-tools:
+Here’s a simple example demonstrating how to integrate a blockchain wallet into your game:
 
 ```lua
 local web3 = require('web3-dev-tools')
 
--- Initialize connection to the blockchain
-local provider = web3.newProvider('https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID')
-local contract = web3.contract(provider, 'YOUR_CONTRACT_ADDRESS', 'YOUR_ABI_DEFINITION')
+-- Initialize the Web3 connection
+local provider = web3.connect('https://mainnet.infura.io/v3/YOUR_INFURA_KEY')
 
--- Call a function from the smart contract
-local result = contract:call('yourFunction', {'parameter1', 'parameter2'})
-print('Result from contract function:', result)
+-- Load player wallet
+local playerWallet = web3.loadWallet('playerPrivateKey')
+
+-- Fetch player balance
+local balance = web3.getBalance(playerWallet.address)
+print("Player's balance: " .. balance .. " ETH")
+
+-- Execute a transaction
+local txHash = web3.sendTransaction({
+    from = playerWallet.address,
+    to = '0xReceiverAddress',
+    value = web3.toWei(0.01, "ether")
+})
+
+print("Transaction successful with hash: " .. txHash)
 ```
 
-Replace `YOUR_INFURA_PROJECT_ID`, `YOUR_CONTRACT_ADDRESS`, and `YOUR_ABI_DEFINITION` with your actual project details.
-
 ## License
+![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

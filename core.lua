@@ -1,36 +1,41 @@
--- Core module for web3-dev-tools
+-- Logger setup with rotation
 
-local PerformanceOptimizer = {}
+local log = require('log')
+local path = require('path')
+local lfs = require 'lfs'
 
--- Optimize table updates and insertions using a preallocated table
-function PerformanceOptimizer:optimizeTableUpdates(data, updates)
-    local optimizedTable = {}
-    for i = 1, #data do
-        optimizedTable[i] = data[i]
-    end
+local Logger = {}
+Logger.__index = Logger
 
-    for key, value in pairs(updates) do
-        optimizedTable[key] = value
-    end
-
-    return optimizedTable
+function Logger:new(logfile, maxSize, maxFiles)
+    local obj = setmetatable({}, Logger)
+    obj.logfile = logfile
+    obj.maxSize = maxSize or 1024 * 1024 -- 1 MB default
+    obj.maxFiles = maxFiles or 5
+    obj.currentSize = 0
+    return obj
 end
 
--- Efficiently process multiple game state updates
-function PerformanceOptimizer:batchProcessStates(currentStates, updatesList)
-    local processedStates = {}
-    for i, updates in ipairs(updatesList) do
-        processedStates[i] = self:optimizeTableUpdates(currentStates, updates)
+function Logger:rotate()
+    if lfs.attributes(self.logfile, 'size') > self.maxSize then
+        for i = self.maxFiles, 2, -1 do
+            local oldName = self.logfile .. '.' .. (i - 1)
+            local newName = self.logfile .. '.' .. i
+            if lfs.attributes(oldName) then
+                os.rename(oldName, newName)
+            end
+        end
+        os.rename(self.logfile, self.logfile .. '.1')
     end
-    return processedStates
 end
 
--- Track performance metrics
-function PerformanceOptimizer:trackPerformance(func)
-    local startTime = os.clock()
-    func()
-    local endTime = os.clock()
-    print(string.format("Function executed in: %.5f seconds", endTime - startTime))
+function Logger:log(message)
+    self:rotate()
+    local file = io.open(self.logfile, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+    end
 end
 
-return PerformanceOptimizer
+return Logger

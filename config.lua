@@ -1,43 +1,33 @@
--- Configuration settings for the web3-dev-tools game
+-- Configuration loader with defaults
 
---- @class Config
---- @field rpcUrl string The URL of the RPC provider
---- @field gameId string The unique identifier of the game
---- @field apiKey string The API key for authentication
+local json = require('json')
+local defaultConfig = {
+    gameName = 'My Awesome Game',
+    maxPlayers = 100,
+    serverRegion = 'us-east',
+    enableVoiceChat = false,
+    graphicsQuality = 'high'
+}
 
-local Config = {}
+local function loadConfig(filePath)
+    local file, err = io.open(filePath, 'r')
+    if not file then
+        print('Warning: Could not open config file, loading defaults. Error: ' .. err)
+        return defaultConfig
+    end
 
---- Initializes the configuration with default values.
---- @return Config The initialized configuration table
-function Config:new()
-    local instance = {}
-    setmetatable(instance, self)
-    self.__index = self
-    instance.rpcUrl = "https://example-rpc-url.com"
-    instance.gameId = "unique-game-id"
-    instance.apiKey = "your-api-key"
-    return instance
+    local content = file:read('*a')
+    file:close()
+
+    local userConfig, decodeErr = json.decode(content)
+    if decodeErr then
+        print('Warning: Error decoding JSON, loading defaults. Error: ' .. decodeErr)
+        return defaultConfig
+    end
+
+    return setmetatable(userConfig, {__index = defaultConfig})
 end
 
---- Updates the RPC URL.
---- @param self Config The configuration instance
---- @param url string The new RPC URL
-function Config:setRpcUrl(self, url)
-    self.rpcUrl = url
-end
-
---- Updates the game ID.
---- @param self Config The configuration instance
---- @param id string The new game ID
-function Config:setGameId(self, id)
-    self.gameId = id
-end
-
---- Updates the API key.
---- @param self Config The configuration instance
---- @param key string The new API key
-function Config:setApiKey(self, key)
-    self.apiKey = key
-end
-
-return Config
+return {
+    loadConfig = loadConfig
+}

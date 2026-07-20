@@ -1,40 +1,43 @@
-local log = require('logrotate')
+-- Configuration settings for the web3-dev-tools game
 
-local function setup_logger()
-    local logger = log:new('/var/log/web3-game.log', {
-        size = '10MB',
-        backups = 5,
-        level = 'info',
-    })
+--- @class Config
+--- @field rpcUrl string The URL of the RPC provider
+--- @field gameId string The unique identifier of the game
+--- @field apiKey string The API key for authentication
 
-    function logger:info(message)
-        self:write('INFO: ' .. message)
-    end
+local Config = {}
 
-    function logger:error(message)
-        self:write('ERROR: ' .. message)
-    end
-
-    function logger:warning(message)
-        self:write('WARNING: ' .. message)
-    end
-
-    return logger
+--- Initializes the configuration with default values.
+--- @return Config The initialized configuration table
+function Config:new()
+    local instance = {}
+    setmetatable(instance, self)
+    self.__index = self
+    instance.rpcUrl = "https://example-rpc-url.com"
+    instance.gameId = "unique-game-id"
+    instance.apiKey = "your-api-key"
+    return instance
 end
 
-local logger = setup_logger()
-
-function log_message(level, message)
-    if level == 'info' then
-        logger:info(message)
-    elseif level == 'error' then
-        logger:error(message)
-    elseif level == 'warning' then
-        logger:warning(message)
-    end
+--- Updates the RPC URL.
+--- @param self Config The configuration instance
+--- @param url string The new RPC URL
+function Config:setRpcUrl(self, url)
+    self.rpcUrl = url
 end
 
-return {
-    log_message = log_message,
-    logger = logger,
-}
+--- Updates the game ID.
+--- @param self Config The configuration instance
+--- @param id string The new game ID
+function Config:setGameId(self, id)
+    self.gameId = id
+end
+
+--- Updates the API key.
+--- @param self Config The configuration instance
+--- @param key string The new API key
+function Config:setApiKey(self, key)
+    self.apiKey = key
+end
+
+return Config

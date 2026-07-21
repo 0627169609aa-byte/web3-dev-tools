@@ -1,31 +1,42 @@
--- Helper functions for input validation in gaming
+-- Helper functions for common gaming operations
 
-local M = {}
-
--- Validate if input is a positive integer
-function M.isPositiveInteger(input)
-    return type(input) == "number" and input > 0 and math.floor(input) == input
+-- Check if a table is empty
+local function isEmpty(table)
+    return next(table) == nil
 end
 
--- Validate if input is a non-empty string
-function M.isNonEmptyString(input)
-    return type(input) == "string" and #input > 0
-end
-
--- Main processing loop
-function M.processInput(playerInput)
-    -- Validate input before processing
-    if not M.isPositiveInteger(playerInput.level) then
-        return "Invalid level: must be a positive integer"
+-- Deep copy a table
+local function deepCopy(original)
+    local copy = {}
+    for key, value in pairs(original) do
+        if type(value) == 'table' then
+            copy[key] = deepCopy(value)
+        else
+            copy[key] = value
+        end
     end
-
-    if not M.isNonEmptyString(playerInput.name) then
-        return "Invalid name: must be a non-empty string"
-    end
-
-    -- Proceed with processing if inputs are valid
-    print(string.format("Processing player: %s with level: %d", playerInput.name, playerInput.level))
-    return "Input processed successfully"
+    return copy
 end
 
-return M
+-- Generate a random number in a given range
+local function randomRange(min, max)
+    math.randomseed(os.time())  -- Seed the random number generator
+    return math.random(min, max)
+end
+
+-- Check if a value exists in a table
+local function valueExists(value, tbl)
+    for _, v in ipairs(tbl) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
+
+return {
+    isEmpty = isEmpty,
+    deepCopy = deepCopy,
+    randomRange = randomRange,
+    valueExists = valueExists,
+}

@@ -1,41 +1,31 @@
--- Logger setup with rotation
+-- Retry logic for network operations
 
-local log = require('log')
-local path = require('path')
-local lfs = require 'lfs'
+local http = require('socket.http')
+local ltn12 = require('ltn12')
 
-local Logger = {}
-Logger.__index = Logger
-
-function Logger:new(logfile, maxSize, maxFiles)
-    local obj = setmetatable({}, Logger)
-    obj.logfile = logfile
-    obj.maxSize = maxSize or 1024 * 1024 -- 1 MB default
-    obj.maxFiles = maxFiles or 5
-    obj.currentSize = 0
-    return obj
-end
-
-function Logger:rotate()
-    if lfs.attributes(self.logfile, 'size') > self.maxSize then
-        for i = self.maxFiles, 2, -1 do
-            local oldName = self.logfile .. '.' .. (i - 1)
-            local newName = self.logfile .. '.' .. i
-            if lfs.attributes(oldName) then
-                os.rename(oldName, newName)
-            end
+local function fetch_with_retry(url, max_retries, delay)
+    local attempts = 0
+    local success, response
+    
+    while attempts < max_retries do
+        attempts = attempts + 1
+        success, response = http.request(url)
+        
+        if success then
+            return response
+        else
+            print('Attempt ' .. attempts .. ' failed, retrying in ' .. delay .. ' seconds...')
+            os.sleep(delay)
         end
-        os.rename(self.logfile, self.logfile .. '.1')
     end
+    
+    error('Failed to fetch data from ' .. url .. ' after ' .. max_retries .. ' attempts')
 end
 
-function Logger:log(message)
-    self:rotate()
-    local file = io.open(self.logfile, 'a')
-    if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        file:close()
-    end
-end
+-- Example usage
+local url = 'http://example.com/data'
+local max_retries = 5
+local delay = 2
 
-return Logger
+local result = fetch_with_retry(url, max_retries, delay)
+print('Fetched result: ' .. result)

@@ -1,31 +1,43 @@
--- Utility function for handling gaming data
+-- Utility functions for web3 gaming
 
-local json = require('json')
+local utils = {}
 
-local function processGameData(gameData)
-    local processedData = {}
-
-    for _, data in ipairs(gameData) do
-        local processedEntry = {}
-        processedEntry.id = data.id
-        processedEntry.name = data.name or 'Unnamed Game'
-        processedEntry.genre = data.genre or 'Unknown'
-        processedEntry.releaseDate = data.releaseDate or 'Not Available'
-        processedEntry.rating = data.rating or 0
-
-        -- Convert additional properties to a more readable format
-        if data.additionalInfo then
-            processedEntry.info = json.decode(data.additionalInfo)
-        else
-            processedEntry.info = {}
-        end
-
-        table.insert(processedData, processedEntry)
+-- Function to safely parse JSON
+function utils.safeJsonParse(jsonString)
+    local success, result = pcall(function() return game:GetService('HttpService'):JSONDecode(jsonString) end)
+    if not success then
+        error('Failed to parse JSON: ' .. tostring(result))
     end
-
-    return processedData
+    return result
 end
 
-return {
-    processGameData = processGameData
-}
+-- Function to validate player input
+function utils.validatePlayerInput(input)
+    if input == nil or input == '' then
+        error('Invalid input: Input cannot be nil or empty')
+    end
+    -- Add more validation rules as needed
+    return true
+end
+
+-- Function to handle network requests with error handling
+function utils.safeNetworkRequest(url)
+    local success, response = pcall(function() return game:GetService('HttpService'):GetAsync(url) end)
+    if not success then
+        error('Network request failed: ' .. tostring(response))
+    end
+    return response
+end
+
+-- Function to check if a number is within a specified range
+function utils.isNumberInRange(value, min, max)
+    if type(value) ~= 'number' then
+        error('Invalid value: Expected a number')
+    end
+    if value < min or value > max then
+        error(string.format('Value out of range: %d is not in [%d, %d]', value, min, max))
+    end
+    return true
+end
+
+return utils

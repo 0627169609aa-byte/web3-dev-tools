@@ -2,42 +2,49 @@
 
 local utils = {}
 
--- Function to safely parse JSON
-function utils.safeJsonParse(jsonString)
-    local success, result = pcall(function() return game:GetService('HttpService'):JSONDecode(jsonString) end)
-    if not success then
-        error('Failed to parse JSON: ' .. tostring(result))
-    end
-    return result
+--- Generates a random number between min and max.
+-- @param min The minimum number
+-- @param max The maximum number
+-- @return A random number between min and max
+function utils.randomBetween(min, max)
+    return math.random(min, max)
 end
 
--- Function to validate player input
-function utils.validatePlayerInput(input)
-    if input == nil or input == '' then
-        error('Invalid input: Input cannot be nil or empty')
-    end
-    -- Add more validation rules as needed
-    return true
+--- Formats a timestamp into a human-readable date string.
+-- @param timestamp The timestamp to format
+-- @return A formatted date string
+function utils.formatDate(timestamp)
+    local date = os.date('*t', timestamp)
+    return string.format('%04d-%02d-%02d %02d:%02d:%02d', 
+        date.year, date.month, date.day, date.hour, date.min, date.sec)
 end
 
--- Function to handle network requests with error handling
-function utils.safeNetworkRequest(url)
-    local success, response = pcall(function() return game:GetService('HttpService'):GetAsync(url) end)
-    if not success then
-        error('Network request failed: ' .. tostring(response))
+--- Checks if a value is in a table.
+-- @param value The value to check
+-- @param tbl The table to check in
+-- @return True if value is found, false otherwise
+function utils.contains(value, tbl)
+    for _, v in ipairs(tbl) do
+        if v == value then
+            return true
+        end
     end
-    return response
+    return false
 end
 
--- Function to check if a number is within a specified range
-function utils.isNumberInRange(value, min, max)
-    if type(value) ~= 'number' then
-        error('Invalid value: Expected a number')
+--- Merges two tables into one. If keys are the same, the values from the second table will overwrite the first.
+-- @param tbl1 The first table
+-- @param tbl2 The second table
+-- @return A new table containing keys and values from both tables
+function utils.mergeTables(tbl1, tbl2)
+    local merged = {}
+    for k, v in pairs(tbl1) do
+        merged[k] = v
     end
-    if value < min or value > max then
-        error(string.format('Value out of range: %d is not in [%d, %d]', value, min, max))
+    for k, v in pairs(tbl2) do
+        merged[k] = v
     end
-    return true
+    return merged
 end
 
 return utils

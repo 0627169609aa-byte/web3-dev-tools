@@ -1,42 +1,45 @@
--- Helper functions for common gaming operations
+-- Input validation helper functions
 
--- Check if a table is empty
-local function isEmpty(table)
-    return next(table) == nil
+local M = {}
+
+-- Validate if the input is a number
+function M.validateNumber(input)
+    return type(input) == 'number'
 end
 
--- Deep copy a table
-local function deepCopy(original)
-    local copy = {}
-    for key, value in pairs(original) do
-        if type(value) == 'table' then
-            copy[key] = deepCopy(value)
-        else
-            copy[key] = value
-        end
-    end
-    return copy
+-- Validate if the input is a string
+function M.validateString(input)
+    return type(input) == 'string' and #input > 0
 end
 
--- Generate a random number in a given range
-local function randomRange(min, max)
-    math.randomseed(os.time())  -- Seed the random number generator
-    return math.random(min, max)
-end
-
--- Check if a value exists in a table
-local function valueExists(value, tbl)
-    for _, v in ipairs(tbl) do
-        if v == value then
+-- Validate if the input is one of the accepted values
+function M.validateEnum(input, accepted)
+    for _, value in ipairs(accepted) do
+        if input == value then
             return true
         end
     end
     return false
 end
 
-return {
-    isEmpty = isEmpty,
-    deepCopy = deepCopy,
-    randomRange = randomRange,
-    valueExists = valueExists,
-}
+-- Main processing loop which uses input validation
+function M.processInput(input)
+    local acceptedTypes = {"start", "stop", "pause"}
+
+    if not M.validateNumber(input.id) then
+        error("Invalid input: id must be a number")
+    end
+
+    if not M.validateString(input.name) then
+        error("Invalid input: name must be a non-empty string")
+    end
+
+    if not M.validateEnum(input.action, acceptedTypes) then
+        error("Invalid input: action must be one of 'start', 'stop', 'pause'")
+    end
+
+    -- Process the validated input
+    print(string.format("Processing %s with id %d and action %s", input.name, input.id, input.action))
+end
+
+return M

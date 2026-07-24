@@ -1,43 +1,41 @@
--- Performance optimization for game loop
-local Game = {}
-local frameTime = 0.016  -- Target frame time (60 FPS)
+-- Logger setup with rotation in Lua
 
-function Game:new(o)
-    o = o or { updateTime = 0, objects = {} }
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
+local lfs = require 'lfs'
+local log_file_path = 'logs/application.log' -- path to log file
+local max_size = 10 * 1024 * 1024 -- 10 MB
 
-function Game:addObject(obj)
-    table.insert(self.objects, obj)
-end
-
-function Game:update(dt)
-    self.updateTime = self.updateTime + dt
-    if self.updateTime >= frameTime then
-        self:updateObjects(dt)
-        self.updateTime = 0
-    end
-end
-
-function Game:updateObjects(dt)
-    for _, obj in ipairs(self.objects) do
-        if obj.update then
-            obj:update(dt)
+local function rotate_logs()
+    local file = io.open(log_file_path, 'r')
+    if file then
+        local size = file:seek('end')
+        file:close()
+        if size >= max_size then
+            local timestamp = os.date('%Y%m%d_%H%M%S')
+            local new_log_path = 'logs/application_' .. timestamp .. '.log'
+            os.rename(log_file_path, new_log_path)
         end
     end
 end
 
-function Game:run()
-    local lastTime = os.clock()
-    while true do
-        local currentTime = os.clock()
-        local dt = currentTime - lastTime
-        self:update(dt)
-        lastTime = currentTime
-        -- Insert rendering code here
-    end
+local function log_message(level, message)
+    rotate_logs()
+    local file = io.open(log_file_path, 'a')
+    file:write(string.format('%s [%s] %s\n', os.date('%Y-%m-%d %H:%M:%S'), level, message))
+    file:close()
 end
 
-return Game
+local logger = {}
+
+function logger.info(message)
+    log_message('INFO', message)
+end
+
+function logger.error(message)
+    log_message('ERROR', message)
+end
+
+function logger.debug(message)
+    log_message('DEBUG', message)
+end
+
+return logger

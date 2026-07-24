@@ -1,33 +1,43 @@
--- Logger setup with rotation
+-- Performance optimization for game loop
+local Game = {}
+local frameTime = 0.016  -- Target frame time (60 FPS)
 
-local logging = require('logging')
-local logFile = 'app.log'
-local maxFileSize = 10 * 1024 * 1024  -- 10 MB
+function Game:new(o)
+    o = o or { updateTime = 0, objects = {} }
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
 
-local function rotateLogs()
-    local stats = lfs.attributes(logFile)
-    if stats and stats.size >= maxFileSize then
-        local date = os.date('%Y-%m-%d_%H-%M-%S')
-        local newLogFile = string.format('app_%s.log', date)
-        os.rename(logFile, newLogFile)
+function Game:addObject(obj)
+    table.insert(self.objects, obj)
+end
+
+function Game:update(dt)
+    self.updateTime = self.updateTime + dt
+    if self.updateTime >= frameTime then
+        self:updateObjects(dt)
+        self.updateTime = 0
     end
 end
 
-local function logMessage(level, message)
-    rotateLogs()  -- Check and rotate logs if necessary
-    local logger = logging.file(logFile)
-    logger:log(level, message)
+function Game:updateObjects(dt)
+    for _, obj in ipairs(self.objects) do
+        if obj.update then
+            obj:update(dt)
+        end
+    end
 end
 
-local function info(message)
-    logMessage(logging.INFO, message)
+function Game:run()
+    local lastTime = os.clock()
+    while true do
+        local currentTime = os.clock()
+        local dt = currentTime - lastTime
+        self:update(dt)
+        lastTime = currentTime
+        -- Insert rendering code here
+    end
 end
 
-local function error(message)
-    logMessage(logging.ERROR, message)
-end
-
-return {
-    info = info,
-    error = error,
-}
+return Game

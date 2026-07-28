@@ -1,33 +1,50 @@
--- Utility functions for gaming
+-- Function to handle gaming data
 
--- Function to check if a number is even
-local function isEven(num)
-    return num % 2 == 0
+local GameDataHandler = {}
+
+-- Function to normalize player scores
+function GameDataHandler.normalizeScores(playerScores)
+    local totalScore = 0
+    local numPlayers = #playerScores
+
+    for _, score in ipairs(playerScores) do
+        totalScore = totalScore + score
+    end
+
+    local averageScore = totalScore / numPlayers
+
+    local normalizedScores = {}
+    for i, score in ipairs(playerScores) do
+        normalizedScores[i] = score / averageScore
+    end
+
+    return normalizedScores
 end
 
--- Function to generate a random item based on weights
-local function weightedRandom(items)
-    local totalWeight = 0
-    for _, item in ipairs(items) do
-        totalWeight = totalWeight + item.weight
-    end
-    local randomValue = math.random() * totalWeight
-    local cumulativeWeight = 0
-    for _, item in ipairs(items) do
-        cumulativeWeight = cumulativeWeight + item.weight
-        if randomValue <= cumulativeWeight then
-            return item
+-- Function to filter out low scores
+function GameDataHandler.filterLowScores(playerScores, threshold)
+    local filteredScores = {}
+    for _, score in ipairs(playerScores) do
+        if score >= threshold then
+            table.insert(filteredScores, score)
         end
     end
+    return filteredScores
 end
 
--- Function to calculate distance between two points
-local function calculateDistance(x1, y1, x2, y2)
-    return math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+-- Function to get the top scoring player
+function GameDataHandler.getTopPlayer(playerScores)
+    local topScore = -1
+    local topPlayerIndex = -1
+
+    for i, score in ipairs(playerScores) do
+        if score > topScore then
+            topScore = score
+            topPlayerIndex = i
+        end
+    end
+
+    return topPlayerIndex, topScore
 end
 
-return {
-    isEven = isEven,
-    weightedRandom = weightedRandom,
-    calculateDistance = calculateDistance,
-}
+return GameDataHandler

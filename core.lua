@@ -1,41 +1,33 @@
--- Logger setup with rotation in Lua
+-- Utility functions for gaming
 
-local lfs = require 'lfs'
-local log_file_path = 'logs/application.log' -- path to log file
-local max_size = 10 * 1024 * 1024 -- 10 MB
+-- Function to check if a number is even
+local function isEven(num)
+    return num % 2 == 0
+end
 
-local function rotate_logs()
-    local file = io.open(log_file_path, 'r')
-    if file then
-        local size = file:seek('end')
-        file:close()
-        if size >= max_size then
-            local timestamp = os.date('%Y%m%d_%H%M%S')
-            local new_log_path = 'logs/application_' .. timestamp .. '.log'
-            os.rename(log_file_path, new_log_path)
+-- Function to generate a random item based on weights
+local function weightedRandom(items)
+    local totalWeight = 0
+    for _, item in ipairs(items) do
+        totalWeight = totalWeight + item.weight
+    end
+    local randomValue = math.random() * totalWeight
+    local cumulativeWeight = 0
+    for _, item in ipairs(items) do
+        cumulativeWeight = cumulativeWeight + item.weight
+        if randomValue <= cumulativeWeight then
+            return item
         end
     end
 end
 
-local function log_message(level, message)
-    rotate_logs()
-    local file = io.open(log_file_path, 'a')
-    file:write(string.format('%s [%s] %s\n', os.date('%Y-%m-%d %H:%M:%S'), level, message))
-    file:close()
+-- Function to calculate distance between two points
+local function calculateDistance(x1, y1, x2, y2)
+    return math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
 end
 
-local logger = {}
-
-function logger.info(message)
-    log_message('INFO', message)
-end
-
-function logger.error(message)
-    log_message('ERROR', message)
-end
-
-function logger.debug(message)
-    log_message('DEBUG', message)
-end
-
-return logger
+return {
+    isEven = isEven,
+    weightedRandom = weightedRandom,
+    calculateDistance = calculateDistance,
+}

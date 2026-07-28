@@ -1,33 +1,28 @@
--- Configuration loader with defaults
+local http = require('socket.http')
 
-local json = require('json')
-local defaultConfig = {
-    gameName = 'My Awesome Game',
-    maxPlayers = 100,
-    serverRegion = 'us-east',
-    enableVoiceChat = false,
-    graphicsQuality = 'high'
-}
+local MAX_RETRIES = 5
+local RETRY_DELAY = 2 -- seconds
 
-local function loadConfig(filePath)
-    local file, err = io.open(filePath, 'r')
-    if not file then
-        print('Warning: Could not open config file, loading defaults. Error: ' .. err)
-        return defaultConfig
+local function http_get_with_retries(url)
+    local tries = 0
+    local response, code, headers, status
+    repeat
+        response, code, headers, status = http.request(url)
+        tries = tries + 1
+        if not response then
+            print('Attempt '..tries..' failed: '..(code or 'unknown error'))
+            if tries < MAX_RETRIES then
+                os.execute('sleep '..RETRY_DELAY)
+            end
+        end
+    until response or tries >= MAX_RETRIES
+
+    if not response then
+        error('HTTP request failed after '..MAX_RETRIES..' attempts')
     end
-
-    local content = file:read('*a')
-    file:close()
-
-    local userConfig, decodeErr = json.decode(content)
-    if decodeErr then
-        print('Warning: Error decoding JSON, loading defaults. Error: ' .. decodeErr)
-        return defaultConfig
-    end
-
-    return setmetatable(userConfig, {__index = defaultConfig})
+    return response, code, headers, status
 end
 
 return {
-    loadConfig = loadConfig
+    http_get_with_retries = http_get_with_retries,
 }

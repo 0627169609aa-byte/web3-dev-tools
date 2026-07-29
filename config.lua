@@ -1,28 +1,24 @@
-local http = require('socket.http')
+-- Configuration settings for the game
 
-local MAX_RETRIES = 5
-local RETRY_DELAY = 2 -- seconds
+local Config = {}
 
-local function http_get_with_retries(url)
-    local tries = 0
-    local response, code, headers, status
-    repeat
-        response, code, headers, status = http.request(url)
-        tries = tries + 1
-        if not response then
-            print('Attempt '..tries..' failed: '..(code or 'unknown error'))
-            if tries < MAX_RETRIES then
-                os.execute('sleep '..RETRY_DELAY)
-            end
-        end
-    until response or tries >= MAX_RETRIES
+-- Game settings
+Config.gameName = "Web3 Adventure"
+Config.maxPlayers = 100
+Config.defaultPlayerHealth = 100
+Config.playerSpeed = 5
+Config.gravity = 9.81
 
-    if not response then
-        error('HTTP request failed after '..MAX_RETRIES..' attempts')
-    end
-    return response, code, headers, status
-end
+-- Network settings
+Config.network = {}
+Config.network.protocol = "https"
+Config.network.host = "api.web3-adventure.com"
+Config.network.port = 443
+Config.network.timeout = 30 -- seconds
 
-return {
-    http_get_with_retries = http_get_with_retries,
-}
+-- Logging settings
+Config.logging = {}
+Config.logging.level = "info"
+Config.logging.output = "console"
+
+return Config

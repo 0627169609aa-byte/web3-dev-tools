@@ -1,38 +1,32 @@
--- Initialize the web3-dev-tools
-
-local function isValidAddress(address)
-    return type(address) == 'string' and #address == 42 and address:sub(1, 2) == '0x'
+-- Utility function to perform network operations with retry logic
+local function performNetworkOperation(url, retries)
+    local attempts = 0
+    while attempts < retries do
+        attempts = attempts + 1
+        local response, err = http.request(url)
+        if response then
+            return response
+        else
+            print("Attempt " .. attempts .. " failed: " .. err)
+            if attempts < retries then
+                print("Retrying...")
+                os.execute("sleep 1") -- Wait 1 second before retry
+            end
+        end
+    end
+    error("All attempts failed after " .. retries .. " retries.")
 end
 
-local function handleError(err)
-    print('Error: ' .. tostring(err))
-end
-
-local function initialize(config)
-    if not config then
-        handleError('Configuration not provided')
-        return
-    end
-
-    if not isValidAddress(config.contractAddress) then
-        handleError('Invalid contract address')
-        return
-    end
-
-    -- Continue with initialization if everything is valid
-    print('Initializing with contract address: ' .. config.contractAddress)
-    -- Mock implementation of initialization
-    local success = true  -- Assume this is some operation
-
-    if not success then
-        handleError('Failed to initialize - mock error')
+-- Example usage of the function
+local function main()
+    local url = "https://example.com/api/data"
+    local maxRetries = 3
+    local success, result = pcall(performNetworkOperation, url, maxRetries)
+    if success then
+        print("Data received: " .. result)
     else
-        print('Initialization successful')
+        print("Error: " .. result)
     end
 end
 
--- Example usage
-local config = { contractAddress = '0x4e83362442cb11e498e9b1e59e2defb2af264f69' }
-initialize(config)
-
-return { initialize = initialize }
+main()

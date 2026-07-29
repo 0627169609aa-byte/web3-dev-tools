@@ -1,50 +1,38 @@
--- Function to handle gaming data
+-- Performance optimized core module for web3-dev-tools
 
-local GameDataHandler = {}
+local function fetchPlayerData(playerId)
+    local cache = {}
 
--- Function to normalize player scores
-function GameDataHandler.normalizeScores(playerScores)
-    local totalScore = 0
-    local numPlayers = #playerScores
-
-    for _, score in ipairs(playerScores) do
-        totalScore = totalScore + score
+    if cache[playerId] then
+        return cache[playerId]
     end
 
-    local averageScore = totalScore / numPlayers
-
-    local normalizedScores = {}
-    for i, score in ipairs(playerScores) do
-        normalizedScores[i] = score / averageScore
-    end
-
-    return normalizedScores
+    -- Simulating an async network call to fetch player data
+    local playerData = simulateNetworkCall(playerId)  -- Assume this function exists
+    cache[playerId] = playerData
+    return playerData
 end
 
--- Function to filter out low scores
-function GameDataHandler.filterLowScores(playerScores, threshold)
-    local filteredScores = {}
-    for _, score in ipairs(playerScores) do
-        if score >= threshold then
-            table.insert(filteredScores, score)
-        end
-    end
-    return filteredScores
+local function calculateGameStatistics(playerId)
+    local playerData = fetchPlayerData(playerId)
+    local statistics = {
+        score = playerData.score,
+        level = playerData.level,
+        experience = playerData.experience
+    }
+    return statistics
 end
 
--- Function to get the top scoring player
-function GameDataHandler.getTopPlayer(playerScores)
-    local topScore = -1
-    local topPlayerIndex = -1
-
-    for i, score in ipairs(playerScores) do
-        if score > topScore then
-            topScore = score
-            topPlayerIndex = i
-        end
+local function optimizedGameLoop(players)
+    for _, playerId in ipairs(players) do
+        local stats = calculateGameStatistics(playerId)
+        print(string.format("Player: %s | Score: %d | Level: %d",
+            playerId, stats.score, stats.level))
     end
-
-    return topPlayerIndex, topScore
 end
 
-return GameDataHandler
+return {
+    fetchPlayerData = fetchPlayerData,
+    calculateGameStatistics = calculateGameStatistics,
+    optimizedGameLoop = optimizedGameLoop
+}

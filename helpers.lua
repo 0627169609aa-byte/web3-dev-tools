@@ -1,48 +1,39 @@
--- Helper functions for common operations
+-- Configuration loader with defaults
 
--- Function to calculate the damage of an attack
--- @param baseDamage: the base damage of the attack
--- @param critMultiplier: the critical hit multiplier
--- @param isCritical: boolean indicating if it is a critical hit
--- @return calculated damage
-function calculateDamage(baseDamage, critMultiplier, isCritical)
-    if isCritical then
-        return baseDamage * critMultiplier
+local json = require('json')
+
+local defaultConfig = {
+    settingA = true,
+    settingB = 42,
+    settingC = 'default'
+}
+
+local function loadConfig(filename)
+    local file, err = io.open(filename, 'r')
+    if not file then
+        print('Could not open config file:', err)
+        return defaultConfig
     end
-    return baseDamage
-end
 
--- Function to check if a player has enough resources
--- @param playerResources: table containing player's resources
--- @param requiredResources: table containing required resources
--- @return boolean
-function hasEnoughResources(playerResources, requiredResources)
-    for resource, amount in pairs(requiredResources) do
-        if playerResources[resource] == nil or playerResources[resource] < amount then
-            return false
+    local content = file:read('*a')
+    file:close()
+
+    local config, err = json.decode(content)
+    if err then
+        print('Error parsing config JSON:', err)
+        return defaultConfig
+    end
+
+    -- Merge default config with loaded config
+    for key, value in pairs(defaultConfig) do
+        if config[key] == nil then
+            config[key] = value
         end
     end
-    return true
+
+    return config
 end
 
--- Function to get a user's current level based on experience points
--- @param experience: the total experience points
--- @return level
-function getUserLevel(experience)
-    return math.floor(experience / 100)
-end
-
--- Function to format the player's score for display
--- @param score: the player's score
--- @return formatted score string
-function formatScore(score)
-    return string.format('Score: %d', score)
-end
-
--- Function to generate a random number within a range
--- @param min: minimum number (inclusive)
--- @param max: maximum number (inclusive)
--- @return random number between min and max
-function getRandomNumber(min, max)
-    return math.random(min, max)
-end
+return {
+    loadConfig = loadConfig
+}

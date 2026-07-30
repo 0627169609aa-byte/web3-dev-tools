@@ -1,50 +1,41 @@
--- Utility functions for web3 gaming
+-- Utility functions for the Web3 Gaming
 
 local utils = {}
 
---- Generates a random number between min and max.
--- @param min The minimum number
--- @param max The maximum number
--- @return A random number between min and max
-function utils.randomBetween(min, max)
-    return math.random(min, max)
-end
-
---- Formats a timestamp into a human-readable date string.
--- @param timestamp The timestamp to format
--- @return A formatted date string
-function utils.formatDate(timestamp)
-    local date = os.date('*t', timestamp)
-    return string.format('%04d-%02d-%02d %02d:%02d:%02d', 
-        date.year, date.month, date.day, date.hour, date.min, date.sec)
-end
-
---- Checks if a value is in a table.
--- @param value The value to check
--- @param tbl The table to check in
--- @return True if value is found, false otherwise
-function utils.contains(value, tbl)
-    for _, v in ipairs(tbl) do
-        if v == value then
+-- Check if a value exists in a table
+function utils.contains(table, element)
+    for _, value in ipairs(table) do
+        if value == element then
             return true
         end
     end
     return false
 end
 
---- Merges two tables into one. If keys are the same, the values from the second table will overwrite the first.
--- @param tbl1 The first table
--- @param tbl2 The second table
--- @return A new table containing keys and values from both tables
-function utils.mergeTables(tbl1, tbl2)
-    local merged = {}
-    for k, v in pairs(tbl1) do
-        merged[k] = v
+-- Convert a hex string to a byte array
+function utils.hexToBytes(hex)
+    local bytes = {}
+    for i = 1, #hex, 2 do
+        local byte = tonumber(hex:sub(i, i + 1), 16)
+        table.insert(bytes, byte)
     end
-    for k, v in pairs(tbl2) do
-        merged[k] = v
+    return bytes
+end
+
+-- Generate a random string of given length
+function utils.randomString(length)
+    local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    local result = ''
+    for _ = 1, length do
+        local index = math.random(1, #chars)
+        result = result .. chars:sub(index, index)
     end
-    return merged
+    return result
+end
+
+-- Format a timestamp into a human-readable string
+function utils.formatTimestamp(timestamp)
+    return os.date('%Y-%m-%d %H:%M:%S', timestamp)
 end
 
 return utils

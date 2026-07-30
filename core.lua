@@ -1,38 +1,40 @@
--- Performance optimized core module for web3-dev-tools
+-- Core Game Logic for Web3 Gaming
 
-local function fetchPlayerData(playerId)
-    local cache = {}
+local Game = {}
 
-    if cache[playerId] then
-        return cache[playerId]
-    end
+Game.players = {}
 
-    -- Simulating an async network call to fetch player data
-    local playerData = simulateNetworkCall(playerId)  -- Assume this function exists
-    cache[playerId] = playerData
-    return playerData
+-- Function to add a player to the game
+function Game:addPlayer(playerID, playerData)
+    self.players[playerID] = playerData
 end
 
-local function calculateGameStatistics(playerId)
-    local playerData = fetchPlayerData(playerId)
-    local statistics = {
-        score = playerData.score,
-        level = playerData.level,
-        experience = playerData.experience
-    }
-    return statistics
-end
-
-local function optimizedGameLoop(players)
-    for _, playerId in ipairs(players) do
-        local stats = calculateGameStatistics(playerId)
-        print(string.format("Player: %s | Score: %d | Level: %d",
-            playerId, stats.score, stats.level))
+-- Function to remove a player from the game
+function Game:removePlayer(playerID)
+    if self.players[playerID] then
+        self.players[playerID] = nil
     end
 end
 
-return {
-    fetchPlayerData = fetchPlayerData,
-    calculateGameStatistics = calculateGameStatistics,
-    optimizedGameLoop = optimizedGameLoop
-}
+-- Function to get player data
+function Game:getPlayer(playerID)
+    return self.players[playerID]
+end
+
+-- Function to update player score
+function Game:updateScore(playerID, points)
+    if self.players[playerID] then
+        self.players[playerID].score = (self.players[playerID].score or 0) + points
+    end
+end
+
+-- Function to list all players
+function Game:listPlayers()
+    local playerList = {}
+    for id, data in pairs(self.players) do
+        table.insert(playerList, {id = id, score = data.score or 0})
+    end
+    return playerList
+end
+
+return Game

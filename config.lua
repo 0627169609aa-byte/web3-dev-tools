@@ -1,24 +1,42 @@
--- Configuration settings for the game
+local config = {} 
 
-local Config = {}
+-- Default configurations
+config.default = {
+    maxPlayers = 100,
+    gameTimeout = 60,
+    enableChat = true,
+    skinOptions = {
+        "default",
+        "warrior",
+        "mage",
+        "archer"
+    }
+}
 
--- Game settings
-Config.gameName = "Web3 Adventure"
-Config.maxPlayers = 100
-Config.defaultPlayerHealth = 100
-Config.playerSpeed = 5
-Config.gravity = 9.81
+-- Function to load configuration
+function config.load(configFile)
+    local file, err = io.open(configFile, "r")
+    if not file then
+        return nil, "Error loading config: " .. err
+    end
+    local content = file:read("*a")
+    file:close()
+    local loadedConfig, loadErr = loadstring(content)
+    if not loadedConfig then
+        return nil, "Error parsing config: " .. loadErr
+    end
+    return loadedConfig()
+end
 
--- Network settings
-Config.network = {}
-Config.network.protocol = "https"
-Config.network.host = "api.web3-adventure.com"
-Config.network.port = 443
-Config.network.timeout = 30 -- seconds
+-- Function to validate config
+function config.validate(cfg)
+    if type(cfg.maxPlayers) ~= "number" or cfg.maxPlayers <= 0 then
+        return false, "Invalid maxPlayers"
+    end
+    if type(cfg.gameTimeout) ~= "number" or cfg.gameTimeout <= 0 then
+        return false, "Invalid gameTimeout"
+    end
+    return true
+end
 
--- Logging settings
-Config.logging = {}
-Config.logging.level = "info"
-Config.logging.output = "console"
-
-return Config
+return config

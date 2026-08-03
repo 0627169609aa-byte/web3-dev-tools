@@ -1,24 +1,26 @@
--- Configuration settings for the game
-local Config = {}
+-- Configuration settings for game integration
+
+local config = {}  
 
 -- Game settings
-Config.gameName = "SuperGame"
-Config.fullscreen = true
+config.gameName = "Web3 Adventure"
+config.version = "1.0.0"
+config.maxPlayers = 100
 
--- Performance settings
-Config.maxFPS = 60
-Config.enableVSync = true
-Config.textureQuality = "high"
-Config.audioVolume = 0.8
+-- Blockchain settings
+config.blockchain = {}  
+config.blockchain.network = "Ethereum"
+config.blockchain.contractAddress = "0xYourContractAddressHere"
+config.blockchain.gasLimit = 3000000
 
--- Network settings
-Config.serverAddress = "127.0.0.1"
-Config.serverPort = 8080
+-- API settings
+config.api = {}
+config.api.baseUrl = "https://api.web3-gaming.com"
+config.api.key = "your_api_key"
 
--- Function to load configuration 
-function Config.load() 
-    -- Load settings from a file or default values 
-    -- This is a placeholder for actual file loading logic
-end
+-- Rewards settings
+config.rewards = {}  
+config.rewards.itemRarity = { "common", "rare", "epic", "legendary" }
+config.rewards.rewardPoints = { 100, 500, 1000 }
 
-return Config
+return config

@@ -1,26 +1,39 @@
--- Configuration settings for game integration
+-- Configuration Loader for Web3 Gaming
 
-local config = {}  
+local json = require('json')
 
--- Game settings
-config.gameName = "Web3 Adventure"
-config.version = "1.0.0"
-config.maxPlayers = 100
+local ConfigLoader = {}
+ConfigLoader.defaults = {
+    network = 'mainnet',
+    gasPrice = 1000000000,
+    timeout = 30000,
+    logging = true,
+}
 
--- Blockchain settings
-config.blockchain = {}  
-config.blockchain.network = "Ethereum"
-config.blockchain.contractAddress = "0xYourContractAddressHere"
-config.blockchain.gasLimit = 3000000
+function ConfigLoader.loadConfig(filePath)
+    local file, err = io.open(filePath, 'r')
+    if err then
+        print('Error opening config file: ' .. err)
+        return ConfigLoader.defaults
+    end
 
--- API settings
-config.api = {}
-config.api.baseUrl = "https://api.web3-gaming.com"
-config.api.key = "your_api_key"
+    local content = file:read('*a')
+    file:close()
 
--- Rewards settings
-config.rewards = {}  
-config.rewards.itemRarity = { "common", "rare", "epic", "legendary" }
-config.rewards.rewardPoints = { 100, 500, 1000 }
+    local userConfig = json.decode(content)
+    if userConfig == nil then
+        print('Invalid JSON format, using defaults.')
+        return ConfigLoader.defaults
+    end
 
-return config
+    -- Merge user config with defaults
+    for key, value in pairs(ConfigLoader.defaults) do
+        if userConfig[key] == nil then
+            userConfig[key] = value
+        end
+    end
+
+    return userConfig
+end
+
+return ConfigLoader

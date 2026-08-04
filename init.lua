@@ -1,48 +1,58 @@
--- Default configuration values
-local defaultConfig = {
-    environment = "development",
-    logLevel = "info",
-    maxPlayers = 100,
-    serverTimeout = 30,
-    gameName = "MyGame"
-}
+--[[
+    init.lua
+    This module initializes the web3 gaming environment, setting up necessary configurations,
+    including loading required libraries and setting global variables for the gaming application.
+]]
 
--- Function to load configuration from a file or use defaults
-local function loadConfig(filePath)
-    local config = defaultConfig -- Start with default values
+-- Type annotations for the init module
 
-    -- Attempt to read custom configuration file
-    local file = io.open(filePath, "r")
-    if file then
-        local content = file:read("*a")  -- Read entire file content
-        file:close()
+-- Global variables
+local web3 = require('web3')  -- web3 library for blockchain interaction
+local playerList = {}  -- List to keep track of players
 
-        -- Decode JSON content
-        local json = require("dkjson")
-        local customConfig, pos, err = json.decode(content, 1, nil)
-
-        if err then
-            print("Error parsing JSON: " .. err)
-        else
-            -- Merge custom configuration with defaults
-            for key, value in pairs(customConfig) do
-                config[key] = value
-            end
-        end
-    else
-        print("Using default configuration since file not found: " .. filePath)
+--- 
+-- Initializes the gaming environment with essential configurations.
+-- @param config table: Configuration table with necessary parameters.
+-- @return boolean: Returns true if initialization is successful, false otherwise.
+local function initGameEnvironment(config)
+    if not config or type(config) ~= 'table' then
+        print('Invalid configuration provided. Initialization failed.')
+        return false
     end
+    
+    -- Set up global parameters
+    gameTitle = config.title or 'Web3 Game'
+    maxPlayers = config.maxPlayers or 100
 
-    return config
+    print('Initializing the game: ' .. gameTitle)
+    print('Maximum players allowed: ' .. maxPlayers)
+
+    -- Placeholder for further initialization logic
+    -- For example: Loading assets, connecting to a blockchain, etc.
+
+    return true  -- Initialization was successful
 end
 
--- Load configuration using a specified file path
-local config = loadConfig("config.json")
-
--- Debug output of the loaded configuration
-print("Loaded configuration:")
-for k, v in pairs(config) do
-    print(k .. ": " .. tostring(v))
+--- 
+-- Adds a player to the game.
+-- @param player table: The player object to add.
+-- @return boolean: Returns true if player is added, false if not.
+local function addPlayer(player)
+    if #playerList >= maxPlayers then
+        print('Player limit reached. Cannot add more players.')
+        return false
+    end
+    
+    table.insert(playerList, player)
+    print('Player added: ' .. player.name)
+    return true
 end
 
-return config
+-- Initialize the game with default settings
+local success = initGameEnvironment({ title = 'Crypto Battle Arena', maxPlayers = 50 })
+
+-- Example of adding players
+if success then
+    addPlayer({ name = 'Player1' })
+    addPlayer({ name = 'Player2' })
+end

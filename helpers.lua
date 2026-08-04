@@ -1,30 +1,63 @@
--- Logger setup with rotation for web3 gaming
-local lfs = require("lfs")
-local log_file = "app.log"
+-- logger.lua
+local Logger = {}
 
-local function setup_logger(max_size)
-    local function rotate_file()
-        if lfs.attributes(log_file, "size") and lfs.attributes(log_file, "size") > max_size then
-            local timestamp = os.date("%Y%m%d_%H%M%S")
-            local new_file = log_file .. "." .. timestamp
-            os.rename(log_file, new_file)
-        end
-    end
+-- log levels
+Logger.levels = {
+    DEBUG = 1,
+    INFO = 2,
+    WARN = 3,
+    ERROR = 4,
+    FATAL = 5,
+}
 
-    local function log(message)
-        rotate_file()
-        local file = io.open(log_file, "a+")
-        if file then
-            file:write(os.date("[%Y-%m-%d %H:%M:%S] ") .. message .. "\n")
-            file:close()
-        end
-    end
+-- default log level
+Logger.currentLevel = Logger.levels.INFO
 
-    return log
+-- set log level
+function Logger:setLevel(level)
+    self.currentLevel = level
 end
 
-local logger = setup_logger(1048576) -- 1 MB
+-- check log level
+function Logger:shouldLog(level)
+    return level >= self.currentLevel
+end
 
-return {
-    log = logger
-}
+-- log message with rotation
+function Logger:log(level, message)
+    if self:shouldLog(level) then
+        local timestamp = os.date('%Y-%m-%d %H:%M:%S')
+        local logMessage = string.format('%s [%s] %s', timestamp, level, message)
+
+        -- write log to file with rotation
+        local logfile = 'app.log'
+        local file = io.open(logfile, 'a')
+        if file then
+            file:write(logMessage .. '\n')
+            file:close()
+        end
+         
+        -- check log file size and rotate if necessary
+        if self:checkFileSize(logfile) then
+            self:rotateLogFile(logfile)
+        end
+    end
+end
+
+-- check if log file exceeds size limit
+function Logger:checkFileSize(filename)
+    local file = io.open(filename, 'r')
+    if file then
+        local size = file:seek('end')
+        file:close()
+        return size > 1024 * 1024 -- 1 MB limit
+    end
+    return false
+end
+
+-- rotate log file
+function Logger:rotateLogFile(filename)
+    os.rename(filename, filename .. '.' .. os.date('%Y%m%d%H%M%S'))
+end
+
+return Logger

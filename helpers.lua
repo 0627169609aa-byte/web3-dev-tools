@@ -1,38 +1,30 @@
--- Utility functions for gaming data handling
+-- Logger setup with rotation for web3 gaming
+local lfs = require("lfs")
+local log_file = "app.log"
 
-local M = {}
-
---- Convert a table of player stats into a JSON string
--- @param stats Table containing player statistics
--- @return JSON string representation of player stats
-function M.statsToJSON(stats)
-    local json = require('dkjson')
-    return json.encode(stats)
-end
-
---- Calculate the average score from a list of scores
--- @param scores Table containing numerical scores
--- @return Average score as a number
-function M.calculateAverageScore(scores)
-    local total = 0
-    local count = #scores 
-    for _, score in ipairs(scores) do
-        total = total + score
-    end
-    return count > 0 and total / count or 0
-end
-
---- Find the highest score in a list of scores
--- @param scores Table containing numerical scores
--- @return The highest score as a number
-function M.findHighestScore(scores)
-    local highest = -math.huge 
-    for _, score in ipairs(scores) do
-        if score > highest then
-            highest = score
+local function setup_logger(max_size)
+    local function rotate_file()
+        if lfs.attributes(log_file, "size") and lfs.attributes(log_file, "size") > max_size then
+            local timestamp = os.date("%Y%m%d_%H%M%S")
+            local new_file = log_file .. "." .. timestamp
+            os.rename(log_file, new_file)
         end
     end
-    return highest
+
+    local function log(message)
+        rotate_file()
+        local file = io.open(log_file, "a+")
+        if file then
+            file:write(os.date("[%Y-%m-%d %H:%M:%S] ") .. message .. "\n")
+            file:close()
+        end
+    end
+
+    return log
 end
 
-return M
+local logger = setup_logger(1048576) -- 1 MB
+
+return {
+    log = logger
+}

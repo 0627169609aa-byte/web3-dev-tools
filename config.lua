@@ -1,39 +1,32 @@
--- Configuration Loader for Web3 Gaming
+-- Configuration settings for the game
 
-local json = require('json')
+local config = {}
 
-local ConfigLoader = {}
-ConfigLoader.defaults = {
-    network = 'mainnet',
-    gasPrice = 1000000000,
-    timeout = 30000,
-    logging = true,
-}
+-- Game settings
+config.gameName = "My Game"
+config.maxPlayers = 100
+config.gameMode = "multiplayer"
 
-function ConfigLoader.loadConfig(filePath)
-    local file, err = io.open(filePath, 'r')
-    if err then
-        print('Error opening config file: ' .. err)
-        return ConfigLoader.defaults
+-- Input validation function
+local function validateInput(input)
+    if type(input) ~= "string" then
+        return false, "Input must be a string"
     end
-
-    local content = file:read('*a')
-    file:close()
-
-    local userConfig = json.decode(content)
-    if userConfig == nil then
-        print('Invalid JSON format, using defaults.')
-        return ConfigLoader.defaults
+    if #input == 0 then
+        return false, "Input cannot be empty"
     end
-
-    -- Merge user config with defaults
-    for key, value in pairs(ConfigLoader.defaults) do
-        if userConfig[key] == nil then
-            userConfig[key] = value
-        end
-    end
-
-    return userConfig
+    return true
 end
 
-return ConfigLoader
+-- Main processing loop
+function config.processInput(userInput)
+    local isValid, err = validateInput(userInput)
+    if not isValid then
+        print("Input Error: " .. err)
+        return
+    end
+    -- Process valid input
+    print("Processing input: " .. userInput)
+end
+
+return config

@@ -1,38 +1,39 @@
--- Initialize web3-dev-tools
-
-local function checkAddress(address)
-    -- Check if the address is valid
-    return string.match(address, '^0x[%x]+') ~= nil
-end
-
-local function formatTransaction(transaction)
-    -- Format transaction into a standard table
+-- Initialize game settings
+local function initializeGameSettings()
     return {
-        from = transaction.from or "",
-        to = transaction.to or "",
-        value = transaction.value or 0,
-        gas = transaction.gas or 21000,
-        data = transaction.data or ""
+        maxPlayers = 10,
+        gameDuration = 30,
+        minLevel = 1,
+        maxLevel = 100
     }
 end
 
-local function generateRandomId(length)
-    -- Generate a random string ID
-    local id = ""
-    for i = 1, length do
-        id = id .. string.char(math.random(97, 122))
+-- Validate input values
+local function validateInput(input)
+    if type(input.maxPlayers) ~= 'number' or input.maxPlayers < 1 or input.maxPlayers > 100 then
+        return false, 'maxPlayers must be a number between 1 and 100'
     end
-    return id
+    if type(input.gameDuration) ~= 'number' or input.gameDuration <= 0 then
+        return false, 'gameDuration must be a positive number'
+    end
+    if type(input.minLevel) ~= 'number' or input.minLevel < 1 or input.minLevel > 100 then
+        return false, 'minLevel must be between 1 and 100'
+    end
+    if type(input.maxLevel) ~= 'number' or input.maxLevel < 1 or input.maxLevel > 100 then
+        return false, 'maxLevel must be between 1 and 100'
+    end
+    return true, ''
 end
 
-local function logError(message)
-    -- Basic error logging
-    print(os.date('%Y-%m-%d %H:%M:%S') .. " ERROR: " .. message)
+-- Main processing loop
+local function mainLoop()
+    local gameSettings = initializeGameSettings()
+    local isValid, errorMsg = validateInput(gameSettings)
+    if not isValid then
+        error(errorMsg)
+    end
+    -- Proceed with game logic using validated settings
+    print('Game settings are valid. Starting the game...')
 end
 
-return {
-    checkAddress = checkAddress,
-    formatTransaction = formatTransaction,
-    generateRandomId = generateRandomId,
-    logError = logError
-}
+mainLoop()

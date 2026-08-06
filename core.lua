@@ -1,40 +1,41 @@
--- Core Game Logic for Web3 Gaming
+--[[
+    Core helper functions for web3 gaming interactions.
+]]
 
-local Game = {}
+local json = require('dkjson')
 
-Game.players = {}
-
--- Function to add a player to the game
-function Game:addPlayer(playerID, playerData)
-    self.players[playerID] = playerData
-end
-
--- Function to remove a player from the game
-function Game:removePlayer(playerID)
-    if self.players[playerID] then
-        self.players[playerID] = nil
+local function parseJson(data)
+    local obj, pos, err = json.decode(data, 1, nil)
+    if err then
+        error('JSON parse error: ' .. err)
     end
+    return obj
 end
 
--- Function to get player data
-function Game:getPlayer(playerID)
-    return self.players[playerID]
-end
-
--- Function to update player score
-function Game:updateScore(playerID, points)
-    if self.players[playerID] then
-        self.players[playerID].score = (self.players[playerID].score or 0) + points
+local function formatJson(obj)
+    local data, err = json.encode(obj)
+    if err then
+        error('JSON format error: ' .. err)
     end
+    return data
 end
 
--- Function to list all players
-function Game:listPlayers()
-    local playerList = {}
-    for id, data in pairs(self.players) do
-        table.insert(playerList, {id = id, score = data.score or 0})
-    end
-    return playerList
+local function generateRandomID()
+    return tostring(math.random(100000, 999999))
 end
 
-return Game
+local function isValidAddress(address)
+    return type(address) == 'string' and #address == 42
+end
+
+local function timestampNow()
+    return os.time(os.date('!*t'))
+end
+
+return {
+    parseJson = parseJson,
+    formatJson = formatJson,
+    generateRandomID = generateRandomID,
+    isValidAddress = isValidAddress,
+    timestampNow = timestampNow
+}

@@ -1,39 +1,45 @@
--- Utility functions for web3 gaming operations
+-- Logger setup with rotation in Lua
 
-local utils = {}
+local lfs = require 'lfs'
+local os = require 'os'
 
--- Convert a hexadecimal string to a decimal number
-function utils.hexToDec(hex)
-    return tonumber(hex, 16)
+local Logger = {}
+Logger.__index = Logger
+
+function Logger:new(log_file, max_size)
+    local instance = setmetatable({}, self)
+    instance.log_file = log_file
+    instance.max_size = max_size or 1024 * 1024 -- Default to 1MB
+    return instance
 end
 
--- Convert a decimal number to a hexadecimal string
-function utils.decToHex(dec)
-    return string.format("%x", dec)
+function Logger:log(message)
+    local file = io.open(self.log_file, 'a')
+    if file then
+        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        file:close()
+        self:check_rotation()
+    else
+        print('Failed to open log file')
+    end
 end
 
--- Validate if a string is a proper Ethereum address
-function utils.isValidAddress(address)
-    return string.match(address, "^0x[a-fA-F0-9]{40}$") ~= nil
-end
+function Logger:check_rotation()
+    local file = io.open(self.log_file, 'r')
+    if file then
+        file:seek('end')
+        local size = file:tell()
+        file:close()
 
--- Generate a random number between min and max
-function utils.random(min, max)
-    math.randomseed(os.time())
-    return math.random(min, max)
-end
-
--- Deep copy a table
-function utils.deepcopy(original)
-    local copy = {}
-    for key, value in pairs(original) do
-        if type(value) == "table" then
-            copy[key] = utils.deepcopy(value)
-        else
-            copy[key] = value
+        if size >= self.max_size then
+            self:rotate() 
         end
     end
-    return copy
 end
 
-return utils
+function Logger:rotate()
+    local rotated_file = self.log_file .. '.' .. os.date('%Y%m%d%H%M%S')
+    os.rename(self.log_file, rotated_file)
+end
+
+return Logger

@@ -1,34 +1,37 @@
--- Main processing loop for web3 game
-
-local function validateInput(input)
-    if type(input) ~= 'table' then
-        return false, 'Input must be a table'
+-- Initialization function for the game
+local function initializeGame(playerName, playerLevel)
+    if not validateInput(playerName, playerLevel) then
+        return nil, "Invalid input"
     end
-    if not input.action or type(input.action) ~= 'string' then
-        return false, 'Input must contain a valid action'
+    -- Proceed to initialize the game with valid inputs
+    print("Initializing game for " .. playerName .. " at level " .. playerLevel)
+    -- Game initialization logic goes here
+end
+
+-- Function to validate inputs
+local function validateInput(name, level)
+    if type(name) ~= "string" or #name == 0 then
+        print("Error: Player name must be a non-empty string")
+        return false
+    end
+    if type(level) ~= "number" or level < 1 or level > 100 then
+        print("Error: Player level must be a number between 1 and 100")
+        return false
     end
     return true
 end
 
-local function processInput(input)
-    local isValid, errorMessage = validateInput(input)
-    if not isValid then
-        print('Error:', errorMessage)
+-- Main processing loop
+local function main()
+    local playerName = "Alice"
+    local playerLevel = 10
+    local success, err = initializeGame(playerName, playerLevel)
+    if not success then
+        print(err)
         return
     end
-
-    if input.action == 'start' then
-        print('Game started')
-    elseif input.action == 'stop' then
-        print('Game stopped')
-    else
-        print('Unknown action')
-    end
+    -- Continue with main game loop
+    print("Game started successfully!")
 end
 
--- Main loop example
-while true do
-    local userInput = { action = 'start' } -- Example input
-    processInput(userInput)
-    os.execute('sleep 1')  -- Simulate processing time
-end
+main()

@@ -1,41 +1,46 @@
--- Utility functions for the Web3 Gaming
+-- Utility functions for gaming data handling
 
-local utils = {}
+local json = require('dkjson') -- Assuming dkjson is available for JSON handling
 
--- Check if a value exists in a table
-function utils.contains(table, element)
-    for _, value in ipairs(table) do
-        if value == element then
-            return true
+--- Converts gaming data to JSON format
+-- @param data table The gaming data to convert
+-- @return string JSON representation of the gaming data
+local function toJson(data)
+    local jsonString, pos, err = json.encode(data)
+    if err then
+        error('Error encoding to JSON: ' .. err)
+    end
+    return jsonString
+end
+
+--- Parses JSON string into gaming data
+-- @param jsonString string The JSON string to parse
+-- @return table The gaming data parsed from JSON
+local function fromJson(jsonString)
+    local data, pos, err = json.decode(jsonString)
+    if err then
+        error('Error decoding JSON: ' .. err)
+    end
+    return data
+end
+
+--- Merges two gaming data tables into one
+-- @param table1 table The first gaming data table
+-- @param table2 table The second gaming data table
+-- @return table Merged gaming data table
+local function mergeData(table1, table2)
+    for key, value in pairs(table2) do
+        if type(value) == 'table' and type(table1[key]) == 'table' then
+            table1[key] = mergeData(table1[key], value)
+        else
+            table1[key] = value
         end
     end
-    return false
+    return table1
 end
 
--- Convert a hex string to a byte array
-function utils.hexToBytes(hex)
-    local bytes = {}
-    for i = 1, #hex, 2 do
-        local byte = tonumber(hex:sub(i, i + 1), 16)
-        table.insert(bytes, byte)
-    end
-    return bytes
-end
-
--- Generate a random string of given length
-function utils.randomString(length)
-    local chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    local result = ''
-    for _ = 1, length do
-        local index = math.random(1, #chars)
-        result = result .. chars:sub(index, index)
-    end
-    return result
-end
-
--- Format a timestamp into a human-readable string
-function utils.formatTimestamp(timestamp)
-    return os.date('%Y-%m-%d %H:%M:%S', timestamp)
-end
-
-return utils
+return {
+    toJson = toJson,
+    fromJson = fromJson,
+    mergeData = mergeData
+}

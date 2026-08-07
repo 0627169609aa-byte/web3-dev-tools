@@ -1,46 +1,39 @@
--- Utility functions for gaming data handling
+-- Utility functions for web3 gaming operations
 
-local json = require('dkjson') -- Assuming dkjson is available for JSON handling
+local utils = {}
 
---- Converts gaming data to JSON format
--- @param data table The gaming data to convert
--- @return string JSON representation of the gaming data
-local function toJson(data)
-    local jsonString, pos, err = json.encode(data)
-    if err then
-        error('Error encoding to JSON: ' .. err)
-    end
-    return jsonString
+-- Convert a hexadecimal string to a decimal number
+function utils.hexToDec(hex)
+    return tonumber(hex, 16)
 end
 
---- Parses JSON string into gaming data
--- @param jsonString string The JSON string to parse
--- @return table The gaming data parsed from JSON
-local function fromJson(jsonString)
-    local data, pos, err = json.decode(jsonString)
-    if err then
-        error('Error decoding JSON: ' .. err)
-    end
-    return data
+-- Convert a decimal number to a hexadecimal string
+function utils.decToHex(dec)
+    return string.format("%x", dec)
 end
 
---- Merges two gaming data tables into one
--- @param table1 table The first gaming data table
--- @param table2 table The second gaming data table
--- @return table Merged gaming data table
-local function mergeData(table1, table2)
-    for key, value in pairs(table2) do
-        if type(value) == 'table' and type(table1[key]) == 'table' then
-            table1[key] = mergeData(table1[key], value)
+-- Validate if a string is a proper Ethereum address
+function utils.isValidAddress(address)
+    return string.match(address, "^0x[a-fA-F0-9]{40}$") ~= nil
+end
+
+-- Generate a random number between min and max
+function utils.random(min, max)
+    math.randomseed(os.time())
+    return math.random(min, max)
+end
+
+-- Deep copy a table
+function utils.deepcopy(original)
+    local copy = {}
+    for key, value in pairs(original) do
+        if type(value) == "table" then
+            copy[key] = utils.deepcopy(value)
         else
-            table1[key] = value
+            copy[key] = value
         end
     end
-    return table1
+    return copy
 end
 
-return {
-    toJson = toJson,
-    fromJson = fromJson,
-    mergeData = mergeData
-}
+return utils

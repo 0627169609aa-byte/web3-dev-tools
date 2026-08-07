@@ -1,39 +1,34 @@
--- Initialize game settings
-local function initializeGameSettings()
-    return {
-        maxPlayers = 10,
-        gameDuration = 30,
-        minLevel = 1,
-        maxLevel = 100
-    }
-end
+-- Main processing loop for web3 game
 
--- Validate input values
 local function validateInput(input)
-    if type(input.maxPlayers) ~= 'number' or input.maxPlayers < 1 or input.maxPlayers > 100 then
-        return false, 'maxPlayers must be a number between 1 and 100'
+    if type(input) ~= 'table' then
+        return false, 'Input must be a table'
     end
-    if type(input.gameDuration) ~= 'number' or input.gameDuration <= 0 then
-        return false, 'gameDuration must be a positive number'
+    if not input.action or type(input.action) ~= 'string' then
+        return false, 'Input must contain a valid action'
     end
-    if type(input.minLevel) ~= 'number' or input.minLevel < 1 or input.minLevel > 100 then
-        return false, 'minLevel must be between 1 and 100'
-    end
-    if type(input.maxLevel) ~= 'number' or input.maxLevel < 1 or input.maxLevel > 100 then
-        return false, 'maxLevel must be between 1 and 100'
-    end
-    return true, ''
+    return true
 end
 
--- Main processing loop
-local function mainLoop()
-    local gameSettings = initializeGameSettings()
-    local isValid, errorMsg = validateInput(gameSettings)
+local function processInput(input)
+    local isValid, errorMessage = validateInput(input)
     if not isValid then
-        error(errorMsg)
+        print('Error:', errorMessage)
+        return
     end
-    -- Proceed with game logic using validated settings
-    print('Game settings are valid. Starting the game...')
+
+    if input.action == 'start' then
+        print('Game started')
+    elseif input.action == 'stop' then
+        print('Game stopped')
+    else
+        print('Unknown action')
+    end
 end
 
-mainLoop()
+-- Main loop example
+while true do
+    local userInput = { action = 'start' } -- Example input
+    processInput(userInput)
+    os.execute('sleep 1')  -- Simulate processing time
+end

@@ -1,37 +1,48 @@
--- Initialization function for the game
-local function initializeGame(playerName, playerLevel)
-    if not validateInput(playerName, playerLevel) then
-        return nil, "Invalid input"
-    end
-    -- Proceed to initialize the game with valid inputs
-    print("Initializing game for " .. playerName .. " at level " .. playerLevel)
-    -- Game initialization logic goes here
+-- Initialization of the game environment
+
+local function initializeSettings()
+    local settings = {
+        screenWidth = 800,
+        screenHeight = 600,
+        fullscreen = false,
+    }
+    return settings
 end
 
--- Function to validate inputs
-local function validateInput(name, level)
-    if type(name) ~= "string" or #name == 0 then
-        print("Error: Player name must be a non-empty string")
-        return false
-    end
-    if type(level) ~= "number" or level < 1 or level > 100 then
-        print("Error: Player level must be a number between 1 and 100")
-        return false
-    end
-    return true
+local function loadAssets()
+    local assets = {
+        playerImage = love.graphics.newImage('player.png'),
+        enemyImage = love.graphics.newImage('enemy.png'),
+    }
+    return assets
 end
 
--- Main processing loop
-local function main()
-    local playerName = "Alice"
-    local playerLevel = 10
-    local success, err = initializeGame(playerName, playerLevel)
-    if not success then
-        print(err)
-        return
-    end
-    -- Continue with main game loop
-    print("Game started successfully!")
+local function setupGame()
+    local settings = initializeSettings()
+    local assets = loadAssets()
+    
+    -- Game state
+    local gameState = { 
+        settings = settings,
+        assets = assets,
+        isRunning = true
+    }
+
+    return gameState
 end
 
-main()
+function love.load()
+    game = setupGame()
+end
+
+function love.update(dt)
+    -- Update game logic here
+    if game.isRunning then
+        -- Placeholder for game updates
+    end
+end
+
+function love.draw()
+    -- Draw the game elements here
+    love.graphics.draw(game.assets.playerImage, 100, 100)
+end

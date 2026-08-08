@@ -1,48 +1,37 @@
--- Initialization of the game environment
+--[[
+    Init.lua - Initialization script for the web3-dev-tools gaming framework
 
-local function initializeSettings()
-    local settings = {
-        screenWidth = 800,
-        screenHeight = 600,
-        fullscreen = false,
-    }
-    return settings
-end
+    This script sets up the environment, loads configurations, and initializes necessary modules.
+--]]
 
-local function loadAssets()
-    local assets = {
-        playerImage = love.graphics.newImage('player.png'),
-        enemyImage = love.graphics.newImage('enemy.png'),
-    }
-    return assets
-end
-
-local function setupGame()
-    local settings = initializeSettings()
-    local assets = loadAssets()
-    
-    -- Game state
-    local gameState = { 
-        settings = settings,
-        assets = assets,
-        isRunning = true
-    }
-
-    return gameState
-end
-
-function love.load()
-    game = setupGame()
-end
-
-function love.update(dt)
-    -- Update game logic here
-    if game.isRunning then
-        -- Placeholder for game updates
+---
+-- Type annotation for the initialization function
+-- @return boolean: success status of init process
+---
+local function init(): boolean
+    -- Load configurations
+    local config = require('config')
+    if not config then
+        return false
     end
+
+    -- Initialize core functionalities
+    local core = require('core')
+    if not core.initialize(config) then
+        return false
+    end
+
+    -- Load utilities
+    local utils = require('utils')
+    utils.setup()  -- Set up utilities for the framework
+
+    return true  -- Initialization successful
 end
 
-function love.draw()
-    -- Draw the game elements here
-    love.graphics.draw(game.assets.playerImage, 100, 100)
+-- Execute initialization
+local success = init()
+if not success then
+    error('Initialization failed')
 end
+
+print('Web3 Dev Tools initialized successfully')

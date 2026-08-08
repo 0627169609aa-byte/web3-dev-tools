@@ -1,37 +1,39 @@
 --[[
-    Init.lua - Initialization script for the web3-dev-tools gaming framework
-
-    This script sets up the environment, loads configurations, and initializes necessary modules.
+    init.lua
+    This module initializes the web3 gaming environment and manages connection to the blockchain.
+    It includes setup functions and configuration loading.
 --]]
 
----
--- Type annotation for the initialization function
--- @return boolean: success status of init process
----
-local function init(): boolean
-    -- Load configurations
-    local config = require('config')
-    if not config then
-        return false
-    end
+local json = require('json')
+local config = require('config')
 
-    -- Initialize core functionalities
-    local core = require('core')
-    if not core.initialize(config) then
-        return false
-    end
-
-    -- Load utilities
-    local utils = require('utils')
-    utils.setup()  -- Set up utilities for the framework
-
-    return true  -- Initialization successful
+--- Initializes the blockchain connection.
+-- @param url string The URL of the blockchain node.
+-- @return boolean Success status of the connection.
+local function initializeBlockchainConnection(url)
+    -- Placeholder for actual connection logic
+g    print('Connecting to blockchain at: ' .. url)
+    -- Here you would add logic to establish the connection.
+    return true
 end
 
--- Execute initialization
-local success = init()
-if not success then
-    error('Initialization failed')
+--- Loads the game configuration.
+-- @return table The loaded configuration data.
+local function loadConfiguration() 
+    local configData = config.load('game_config.json')
+    return configData
 end
 
-print('Web3 Dev Tools initialized successfully')
+--- Starts the gaming environment.
+-- This function will load the configuration, and initialize the connection.
+-- @return void
+local function startGame() 
+    local gameConfig = loadConfiguration()
+    local blockchainURL = gameConfig.blockchainURL
+    if not initializeBlockchainConnection(blockchainURL) then 
+        error('Failed to connect to the blockchain.')
+    end
+    print('Gaming environment started successfully!')
+end
+
+startGame()

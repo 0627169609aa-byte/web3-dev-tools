@@ -1,43 +1,28 @@
--- Logger setup with rotation
+-- Main processing loop for validating input
 
-local log = require('log')
-local lfs = require('lfs')
-
-local Logger = {}
-Logger.__index = Logger
-
-function Logger:new(logFilePath, maxSize, backupCount)
-    local instance = setmetatable({}, Logger)
-    instance.logFilePath = logFilePath
-    instance.maxSize = maxSize or 1024 * 1024 -- 1 MB default
-    instance.backupCount = backupCount or 5
-    return instance
-end
-
-function Logger:rotateLogs()
-    local file = io.open(self.logFilePath, 'r')
-    if file then
-        local size = file:seek('end')
-        file:close()
-
-        if size >= self.maxSize then
-            for i = self.backupCount, 1, -1 do
-                local oldFile = string.format('%s.%d', self.logFilePath, i)
-                local newFile = string.format('%s.%d', self.logFilePath, i + 1)
-                if lfs.attributes(oldFile) then
-                    os.rename(oldFile, newFile)
-                end
-            end
-            os.rename(self.logFilePath, string.format('%s.1', self.logFilePath))
-        end
+local function isValidInput(input)
+    if type(input) ~= "string" then
+        return false, "Input must be a string"
     end
+    if #input == 0 then
+        return false, "Input cannot be empty"
+    end
+    return true, ""
 end
 
-function Logger:log(message)
-    self:rotateLogs()
-    local file = io.open(self.logFilePath, 'a')
-    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-    file:close()
+local function processInput(input)
+    local valid, errMsg = isValidInput(input)
+    if not valid then
+        print("Error: " .. errMsg)
+        return
+    end
+    print("Processing input: " .. input)
+    -- Here would be the main processing logic for valid input
 end
 
-return Logger
+-- Simulating some inputs
+local inputs = { "Hello, World!", "", 12345, "Lua Programming" }
+
+for _, input in ipairs(inputs) do
+    processInput(input)
+end

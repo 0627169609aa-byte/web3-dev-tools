@@ -1,39 +1,41 @@
---[[
-    init.lua
-    This module initializes the web3 gaming environment and manages connection to the blockchain.
-    It includes setup functions and configuration loading.
---]]
+-- Initialize the Web3 Gaming Module
 
-local json = require('json')
-local config = require('config')
-
---- Initializes the blockchain connection.
--- @param url string The URL of the blockchain node.
--- @return boolean Success status of the connection.
-local function initializeBlockchainConnection(url)
-    -- Placeholder for actual connection logic
-g    print('Connecting to blockchain at: ' .. url)
-    -- Here you would add logic to establish the connection.
-    return true
-end
-
---- Loads the game configuration.
--- @return table The loaded configuration data.
-local function loadConfiguration() 
-    local configData = config.load('game_config.json')
-    return configData
-end
-
---- Starts the gaming environment.
--- This function will load the configuration, and initialize the connection.
--- @return void
-local function startGame() 
-    local gameConfig = loadConfiguration()
-    local blockchainURL = gameConfig.blockchainURL
-    if not initializeBlockchainConnection(blockchainURL) then 
-        error('Failed to connect to the blockchain.')
+local function connectToBlockchain(endpoint)
+    -- Function to connect to a blockchain node
+    local success, err = pcall(function()
+        local connection = require('web3').connect(endpoint)
+        return connection
+    end)
+    if not success then
+        error('Failed to connect to blockchain: ' .. err)
     end
-    print('Gaming environment started successfully!')
+    return connection
 end
 
-startGame()
+local function getPlayerBalance(walletAddress)
+    -- Function to retrieve player's balance
+    local balance = 0
+    local success, err = pcall(function()
+        balance = require('web3').getBalance(walletAddress)
+    end)
+    if not success then
+        error('Failed to get balance: ' .. err)
+    end
+    return balance
+end
+
+local function transferFunds(fromAddress, toAddress, amount)
+    -- Function to transfer funds between addresses
+    local success, err = pcall(function()
+        require('web3').transfer(fromAddress, toAddress, amount)
+    end)
+    if not success then
+        error('Transfer failed: ' .. err)
+    end
+end
+
+return {
+    connectToBlockchain = connectToBlockchain,
+    getPlayerBalance = getPlayerBalance,
+    transferFunds = transferFunds
+}

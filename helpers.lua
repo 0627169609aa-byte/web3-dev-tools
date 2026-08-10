@@ -1,37 +1,28 @@
--- Input validation for web3 transaction data
+-- Helper functions for game interactions
 
-local function isValidAddress(address)
-    if type(address) ~= 'string' then return false end
-    -- Simple regex for Ethereum addresses
-    return address:match('^0x[a-fA-F0-9]{40}$') ~= nil
+local helpers = {}
+
+-- Function to generate a unique ID for a game entity
+function helpers.generateUniqueId()
+    return tostring(math.random(1000000000, 9999999999))
 end
 
-local function isValidAmount(amount)
-    return type(amount) == 'number' and amount > 0
+-- Function to check if a value is a valid player ID
+function helpers.isValidPlayerId(playerId)
+    return type(playerId) == 'string' and #playerId > 0
 end
 
-local function validateTransactionInput(transaction)
-    if not isValidAddress(transaction.from) then
-        return false, 'Invalid sender address'
-    end
-    if not isValidAddress(transaction.to) then
-        return false, 'Invalid receiver address'
-    end
-    if not isValidAmount(transaction.value) then
-        return false, 'Invalid transaction amount'
-    end
-    return true
+-- Function to calculate the distance between two points
+function helpers.calculateDistance(x1, y1, x2, y2)
+    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
 end
 
-local function processTransaction(transaction)
-    local isValid, errMsg = validateTransactionInput(transaction)
-    if not isValid then
-        error(errMsg)
-    end
-    -- Proceed with transaction processing logic here...
+-- Function to format time in seconds to a readable string
+function helpers.formatTime(seconds)
+    local hours = math.floor(seconds / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local remainingSeconds = seconds % 60
+    return string.format('%02d:%02d:%02d', hours, minutes, remainingSeconds)
 end
 
-return {
-    validateTransactionInput = validateTransactionInput,
-    processTransaction = processTransaction
-}
+return helpers

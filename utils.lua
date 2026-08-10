@@ -1,45 +1,40 @@
--- Logger setup with rotation in Lua
+-- Utility functions for game management
 
-local lfs = require 'lfs'
-local os = require 'os'
+local utils = {}
 
-local Logger = {}
-Logger.__index = Logger
-
-function Logger:new(log_file, max_size)
-    local instance = setmetatable({}, self)
-    instance.log_file = log_file
-    instance.max_size = max_size or 1024 * 1024 -- Default to 1MB
-    return instance
+-- Generates a random number between min and max
+function utils.random(min, max)
+    math.randomseed(os.time())
+    return math.random(min, max)
 end
 
-function Logger:log(message)
-    local file = io.open(self.log_file, 'a')
-    if file then
-        file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-        file:close()
-        self:check_rotation()
-    else
-        print('Failed to open log file')
-    end
-end
-
-function Logger:check_rotation()
-    local file = io.open(self.log_file, 'r')
-    if file then
-        file:seek('end')
-        local size = file:tell()
-        file:close()
-
-        if size >= self.max_size then
-            self:rotate() 
+-- Checks if a table contains a value
+function utils.contains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
         end
     end
+    return false
 end
 
-function Logger:rotate()
-    local rotated_file = self.log_file .. '.' .. os.date('%Y%m%d%H%M%S')
-    os.rename(self.log_file, rotated_file)
+-- Shuffles a table randomly
+function utils.shuffle(t)
+    local shuffled = {}
+    for i = 1, #t do
+        local randIndex = utils.random(1, i)
+        shuffled[i] = shuffled[randIndex]
+        shuffled[randIndex] = t[i]
+    end
+    return shuffled
 end
 
-return Logger
+-- Merges two tables into one
+function utils.merge(t1, t2)
+    for _, v in ipairs(t2) do
+        table.insert(t1, v)
+    end
+    return t1
+end
+
+return utils

@@ -1,28 +1,43 @@
--- Main processing loop for validating input
+-- Core logic for game management
 
-local function isValidInput(input)
-    if type(input) ~= "string" then
-        return false, "Input must be a string"
-    end
-    if #input == 0 then
-        return false, "Input cannot be empty"
-    end
-    return true, ""
+local GameManager = {}
+
+-- Initialize a new game state
+function GameManager:new(gameId)
+    local newObj = { id = gameId, players = {}, state = 'waiting' }
+    self.__index = self
+    return setmetatable(newObj, self)
 end
 
-local function processInput(input)
-    local valid, errMsg = isValidInput(input)
-    if not valid then
-        print("Error: " .. errMsg)
-        return
+-- Add a player to the game
+function GameManager:addPlayer(playerId)
+    if #self.players < 4 then  -- Limit to 4 players
+        table.insert(self.players, playerId)
+        return true
+    else
+        return false, 'Game is full'
     end
-    print("Processing input: " .. input)
-    -- Here would be the main processing logic for valid input
 end
 
--- Simulating some inputs
-local inputs = { "Hello, World!", "", 12345, "Lua Programming" }
-
-for _, input in ipairs(inputs) do
-    processInput(input)
+-- Start the game if enough players
+function GameManager:startGame()
+    if #self.players >= 2 then  -- Minimum players needed
+        self.state = 'playing'
+        return true
+    else
+        return false, 'Not enough players'
+    end
 end
+
+-- End the game
+function GameManager:endGame()
+    self.state = 'ended'
+    -- Additional cleanup can be done here
+end
+
+-- Get current game state
+function GameManager:getState()
+    return self.state
+end
+
+return GameManager

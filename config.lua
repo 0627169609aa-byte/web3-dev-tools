@@ -1,21 +1,27 @@
--- Default configurations
-local defaultConfig = {
-    network = "mainnet",
-    gameName = "MyGame",
-    maxPlayers = 100,
-    enableChat = true,
-    serverAddress = "https://api.mygame.com",
+-- Configuration settings for the game
+
+local config = {
+    MAX_PLAYERS = 100,
+    GAME_VERSION = "1.0.0",
+    SERVER_ADDRESS = "127.0.0.1",
+    PORT = 8080,
+    DEBUG_MODE = true,
+    RESOURCES = {
+        images = "assets/images/",
+        sounds = "assets/sounds/",
+        scripts = "assets/scripts/"
+    },
+    playerDefaults = {
+        health = 100,
+        speed = 5,
+        damage = 10
+    },
 }
 
-local ConfigLoader = {}
-
-function ConfigLoader.load(userConfig)
-    local config = {}
-    -- Merge user configuration with defaults
-    for key, value in pairs(defaultConfig) do
-        config[key] = userConfig[key] or value
-    end
+-- Function to load configuration
+function config.load()
+    -- Normally you could load from a file or environment
     return config
 end
 
-return ConfigLoader
+return config

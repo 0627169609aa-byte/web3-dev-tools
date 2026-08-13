@@ -1,24 +1,21 @@
--- Configuration for web3 gaming tools
+-- Default configurations
+local defaultConfig = {
+    network = "mainnet",
+    gameName = "MyGame",
+    maxPlayers = 100,
+    enableChat = true,
+    serverAddress = "https://api.mygame.com",
+}
 
----@class Config
---- Holds the configuration for game settings.
----@field apiUrl string
----@field gameName string
----@field maxPlayers number
-local Config = {}
+local ConfigLoader = {}
 
-Config.apiUrl = "https://api.example.com/v1"
-Config.gameName = "CryptoBattle"
-Config.maxPlayers = 100
-
---- Get the full configuration
----@return table
-function Config:getConfig()
-    return {
-        apiUrl = self.apiUrl,
-        gameName = self.gameName,
-        maxPlayers = self.maxPlayers
-    }
+function ConfigLoader.load(userConfig)
+    local config = {}
+    -- Merge user configuration with defaults
+    for key, value in pairs(defaultConfig) do
+        config[key] = userConfig[key] or value
+    end
+    return config
 end
 
-return Config
+return ConfigLoader

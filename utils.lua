@@ -1,44 +1,42 @@
--- Utility functions for web3 gaming
+-- Utility functions for network operations
 
-local M = {}
+local json = require('cjson')
+local http = require('socket.http')
+local ltn12 = require('ltn12')
 
--- Safe division function that handles division by zero
-function M.safeDivide(num, denom)
-    if denom == 0 then
-        error("Division by zero error")
-    else
-        return num / denom
-    end
-end
-
--- Function to validate player input
-function M.validateInput(input)
-    if type(input) ~= "string" or #input == 0 then
-        error("Invalid input: must be a non-empty string")
-    end
-    return true
-end
-
--- Function to fetch data with error handling
-function M.fetchDataWithRetry(url, retries)
-    local attempt = 0
-    while attempt < retries do
-        local success, result = pcall(function()
-            -- Simulated fetching operation
-            local response = http.get(url)
-            if not response then
-                error("Failed to fetch data")
-            end
-            return response.body
-        end)
-        if success then
-            return result
+local function handle_http_request(url, max_retries)
+    local response_body = {}
+    local attempts = 0
+    local success = false
+    
+    while attempts < max_retries and not success do
+        attempts = attempts + 1
+        local result, status_code = http.request({
+            url = url,
+            sink = ltn12.sink.table(response_body)
+        })
+        
+        if status_code == 200 then
+            success = true
+            return table.concat(response_body)
         else
-            attempt = attempt + 1
-            print("Error fetching data: " .. result .. ". Retrying... (", attempt, "/", retries, ")")
+            print('Attempt ' .. attempts .. ' failed with status: ' .. status_code)
         end
     end
-    error("Failed to fetch data after " .. retries .. " attempts")
+    
+    error('Failed to fetch data after ' .. attempts .. ' attempts')
 end
 
-return M
+local function fetch_data(url)
+    local max_retries = 3
+    local success, result = pcall(handle_http_request, url, max_retries)
+    if success then
+        return json.decode(result)
+    else
+        error('Network operation failed: ' .. result)
+    end
+end
+
+return {
+    fetch_data = fetch_data
+}

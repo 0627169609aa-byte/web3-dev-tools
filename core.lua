@@ -1,43 +1,27 @@
--- Core logic for game management
+-- Logger setup with rotation
+local lfs = require('lfs')
+local log_filename = 'app.log'
+local max_log_size = 1024 * 1024 * 5  -- 5 MB
 
-local GameManager = {}
+local function rotate_logs()
+    local file = io.open(log_filename, 'r')
+    if file then
+        local file_size = file:seek('end')
+        file:close()
 
--- Initialize a new game state
-function GameManager:new(gameId)
-    local newObj = { id = gameId, players = {}, state = 'waiting' }
-    self.__index = self
-    return setmetatable(newObj, self)
-end
-
--- Add a player to the game
-function GameManager:addPlayer(playerId)
-    if #self.players < 4 then  -- Limit to 4 players
-        table.insert(self.players, playerId)
-        return true
-    else
-        return false, 'Game is full'
+        if file_size >= max_log_size then
+            os.rename(log_filename, log_filename .. '.' .. os.date('%Y%m%d%H%M%S'))
+        end
     end
 end
 
--- Start the game if enough players
-function GameManager:startGame()
-    if #self.players >= 2 then  -- Minimum players needed
-        self.state = 'playing'
-        return true
-    else
-        return false, 'Not enough players'
-    end
+local function log_message(message)
+    rotate_logs()
+    local file = io.open(log_filename, 'a')
+    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+    file:close()
 end
 
--- End the game
-function GameManager:endGame()
-    self.state = 'ended'
-    -- Additional cleanup can be done here
-end
-
--- Get current game state
-function GameManager:getState()
-    return self.state
-end
-
-return GameManager
+return {
+    log = log_message
+}

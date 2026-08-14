@@ -1,41 +1,26 @@
--- Initialize the Web3 Gaming Module
+-- Function to perform a network operation with retry logic
+local function performNetworkOperation(url, retries, delay)
+    local attempt = 0
+    while attempt < retries do
+        local success, response = pcall(function()
+            -- Simulating a network call
+            return http.request(url)
+        end)
 
-local function connectToBlockchain(endpoint)
-    -- Function to connect to a blockchain node
-    local success, err = pcall(function()
-        local connection = require('web3').connect(endpoint)
-        return connection
-    end)
-    if not success then
-        error('Failed to connect to blockchain: ' .. err)
+        if success then
+            return response
+        else
+            attempt = attempt + 1
+            print(string.format("Attempt %d failed: %s", attempt, response))
+            os.execute("sleep " .. delay)  -- Wait before next attempt
+        end
     end
-    return connection
+    error("Network operation failed after " .. retries .. " attempts.")
 end
 
-local function getPlayerBalance(walletAddress)
-    -- Function to retrieve player's balance
-    local balance = 0
-    local success, err = pcall(function()
-        balance = require('web3').getBalance(walletAddress)
-    end)
-    if not success then
-        error('Failed to get balance: ' .. err)
-    end
-    return balance
-end
-
-local function transferFunds(fromAddress, toAddress, amount)
-    -- Function to transfer funds between addresses
-    local success, err = pcall(function()
-        require('web3').transfer(fromAddress, toAddress, amount)
-    end)
-    if not success then
-        error('Transfer failed: ' .. err)
-    end
-end
-
-return {
-    connectToBlockchain = connectToBlockchain,
-    getPlayerBalance = getPlayerBalance,
-    transferFunds = transferFunds
-}
+-- Example usage
+local url = "http://example.com/api"
+local retries = 3
+local delay = 2
+local response = performNetworkOperation(url, retries, delay)
+print("Final response: ", response)

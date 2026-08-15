@@ -1,27 +1,25 @@
--- Configuration settings for the game
+-- Logger configuration for web3-dev-tools
+local log = require('logger')
 
-local config = {
-    MAX_PLAYERS = 100,
-    GAME_VERSION = "1.0.0",
-    SERVER_ADDRESS = "127.0.0.1",
-    PORT = 8080,
-    DEBUG_MODE = true,
-    RESOURCES = {
-        images = "assets/images/",
-        sounds = "assets/sounds/",
-        scripts = "assets/scripts/"
-    },
-    playerDefaults = {
-        health = 100,
-        speed = 5,
-        damage = 10
-    },
-}
-
--- Function to load configuration
-function config.load()
-    -- Normally you could load from a file or environment
-    return config
+local function setupLogger(logFilePath, maxSize, maxFiles)
+    -- Create a new logger instance
+    local logger = log.newLogger(logFilePath)
+    
+    -- Set the maximum size of each log file
+    logger:setMaxSize(maxSize or 1048576) -- Default to 1 MB
+    
+    -- Set the maximum number of log files to keep
+    logger:setMaxFiles(maxFiles or 5) -- Default to 5 rotated files
+    
+    return logger
 end
 
-return config
+-- Path for the log file
+local logFilePath = './logs/app.log'
+local maxSize = 2 * 1024 * 1024 -- 2 MB
+local maxFiles = 3
+
+-- Setup the logger and return it
+local appLogger = setupLogger(logFilePath, maxSize, maxFiles)
+
+return appLogger

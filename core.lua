@@ -1,26 +1,36 @@
--- Main processing loop with input validation
+-- Function to perform a network operation with retry logic
+local function performNetworkOperation(url, maxRetries)
+    local attempts = 0
+    local success, response
 
--- Function to validate user input
-local function validateInput(input)
-    if type(input) ~= "string" or #input == 0 then
-        return false, "Input must be a non-empty string"
-    end
-    return true
-end
+    while attempts < maxRetries do
+        success, response = pcall(function()
+            return http.get(url) -- Replace with appropriate network call
+        end)
 
--- Main processing function
-local function processInputs(inputs)
-    for _, input in ipairs(inputs) do
-        local isValid, errorMsg = validateInput(input)
-        if not isValid then
-            print("Error: " .. errorMsg)
-            return
+        if success and response then
+            return response
+        else
+            attempts = attempts + 1
+            print("Attempt " .. attempts .. " failed. Retrying...")
+            os.execute("sleep 1") -- wait before retrying
         end
-        -- Process valid input
-        print("Processing: " .. input)
     end
+
+    error("Failed to perform network operation after " .. maxRetries .. " attempts.")
 end
 
 -- Example usage
-local userInputs = {"input1", "input2", "", 123}
-processInputs(userInputs)
+local url = "https://api.gamingplatform.com/data"
+local maxRetries = 5
+local data
+
+local status, err = pcall(function()
+    data = performNetworkOperation(url, maxRetries)
+end)
+
+if not status then
+    print("Error: " .. err)
+else
+    print("Data retrieved successfully:", data)
+end

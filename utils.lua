@@ -1,42 +1,37 @@
--- Utility functions for network operations
+-- Utility functions for web3 gaming
 
-local json = require('cjson')
-local http = require('socket.http')
-local ltn12 = require('ltn12')
+local utils = {}
 
-local function handle_http_request(url, max_retries)
-    local response_body = {}
-    local attempts = 0
-    local success = false
-    
-    while attempts < max_retries and not success do
-        attempts = attempts + 1
-        local result, status_code = http.request({
-            url = url,
-            sink = ltn12.sink.table(response_body)
-        })
-        
-        if status_code == 200 then
-            success = true
-            return table.concat(response_body)
-        else
-            print('Attempt ' .. attempts .. ' failed with status: ' .. status_code)
-        end
-    end
-    
-    error('Failed to fetch data after ' .. attempts .. ' attempts')
+-- Check if a given string is empty
+function utils.isEmpty(str)
+    return str == nil or str == ''
 end
 
-local function fetch_data(url)
-    local max_retries = 3
-    local success, result = pcall(handle_http_request, url, max_retries)
-    if success then
-        return json.decode(result)
-    else
-        error('Network operation failed: ' .. result)
-    end
+-- Convert a hexadecimal string to a decimal number
+function utils.hexToDecimal(hex)
+    return tonumber(hex, 16)
 end
 
-return {
-    fetch_data = fetch_data
-}
+-- Generate a random number within a specified range
+function utils.randomInRange(min, max)
+    return math.random(min, max)
+end
+
+-- Format a number to a specified number of decimal places
+function utils.formatNumber(num, decimals)
+    local mult = 10 ^ (decimals or 0)
+    return tostring(math.floor(num * mult + 0.5) / mult)
+end
+
+-- Shuffle a table randomly
+function utils.shuffle(table)
+    local shuffled = {}
+    for i = 1, #table do
+        local randIndex = math.random(1, i)
+        shuffled[i] = shuffled[randIndex] or table[i]
+        shuffled[randIndex] = table[i]
+    end
+    return shuffled
+end
+
+return utils

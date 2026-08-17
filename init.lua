@@ -1,56 +1,37 @@
--- Initialization script for web3-dev-tools
+-- Configuration Loader with Defaults
 
----
--- Initializes the gaming environment for the web3 platform.
--- 
--- @return boolean success - Returns true if initialization was successful, false otherwise
----
-local function initialize(): boolean
-    local success = true
-    -- Load and configure game settings
-    local settings = loadGameSettings()
-    if not settings then
-        success = false
-        print("Failed to load game settings.")
+local config = {}
+
+-- Default configuration values
+local defaultConfig = {
+    host = "localhost",
+    port = 8080,
+    useSSL = false,
+    logLevel = "info"
+}
+
+-- Function to load user configuration
+local function loadConfig(userConfig)
+    -- Start with default values
+    for key, value in pairs(defaultConfig) do
+        config[key] = userConfig[key] or value
     end
+end
 
-    -- Connect to blockchain
-    if not connectToBlockchain() then
-        success = false
-        print("Failed to connect to the blockchain.")
+-- Function to get a configuration value
+function config.get(key)
+    return config[key] or nil
+end
+
+-- Function to print the current configuration
+function config.print()
+    for key, value in pairs(config) do
+        print(string.format("%s: %s", key, tostring(value)))
     end
-
-    return success
 end
 
----
--- Loads game settings from a configuration file.
--- 
--- @return table settings - The loaded game settings
----
-local function loadGameSettings(): table
-    -- Dummy implementation returning example settings
-    return {
-        maxPlayers = 100,
-        gameMode = "survival",
-        currency = "ETH"
-    }
-end
+-- Load user configuration, if any
+local userConfig = {}  -- Replace with actual user input logic
+loadConfig(userConfig)
 
----
--- Simulates connecting to a blockchain.
--- 
--- @return boolean - Returns true if connected, false otherwise
----
-local function connectToBlockchain(): boolean
-    -- For demonstration, let's assume the connection is always successful
-    return true
-end
-
--- Main execution
-local success = initialize()
-if success then
-    print("Initialization successful!")
-else
-    print("Initialization failed.")
-end
+return config

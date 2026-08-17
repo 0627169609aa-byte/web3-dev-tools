@@ -1,37 +1,35 @@
--- Utility functions for web3 gaming
+-- Utility functions for game management
 
-local utils = {}
+local M = {}
 
--- Check if a given string is empty
-function utils.isEmpty(str)
-    return str == nil or str == ''
+-- Function to generate a unique identifier
+function M.generateID()
+    return tostring(math.random(1, 100000)) .. os.time()
 end
 
--- Convert a hexadecimal string to a decimal number
-function utils.hexToDecimal(hex)
-    return tonumber(hex, 16)
+-- Function to check if a table is empty
+function M.isEmpty(t)
+    return next(t) == nil
 end
 
--- Generate a random number within a specified range
-function utils.randomInRange(min, max)
-    return math.random(min, max)
-end
-
--- Format a number to a specified number of decimal places
-function utils.formatNumber(num, decimals)
-    local mult = 10 ^ (decimals or 0)
-    return tostring(math.floor(num * mult + 0.5) / mult)
-end
-
--- Shuffle a table randomly
-function utils.shuffle(table)
-    local shuffled = {}
-    for i = 1, #table do
-        local randIndex = math.random(1, i)
-        shuffled[i] = shuffled[randIndex] or table[i]
-        shuffled[randIndex] = table[i]
+-- Function to deep copy a table
+function M.deepcopy(orig)
+    if type(orig) ~= 'table' then return orig end
+    local copy = {}
+    for k, v in pairs(orig) do
+        copy[M.deepcopy(k)] = M.deepcopy(v)
     end
-    return shuffled
+    return copy
 end
 
-return utils
+-- Function to print a formatted message to the console
+function M.logMessage(msg)
+    print(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. msg)
+end
+
+-- Function to validate player data
+function M.validatePlayerData(player)
+    return player.name ~= nil and player.level ~= nil
+end
+
+return M

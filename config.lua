@@ -1,42 +1,36 @@
--- Logger setup with rotation
-local Logger = {}
-
-local log_file_path = 'app.log'
-local log_file_max_size = 10 * 1024 * 1024  -- 10 MB
-local log_file = nil
-
-local function rotate_log_file()
-    if log_file then
-        log_file:close()
+local function validateInput(input)
+    if type(input) ~= "table" then
+        return false, "Input must be a table."
     end
-    os.rename(log_file_path, log_file_path .. os.date('%Y%m%d%H%M%S'))
-    log_file = io.open(log_file_path, 'a')
-end
-
-local function log(message)
-    if not log_file then
-        log_file = io.open(log_file_path, 'a')
+    for key, value in pairs(input) do
+        if type(key) ~= "string" then
+            return false, "Keys must be strings."
+        end
+        if not value or (type(value) ~= "string" and type(value) ~= "number") then
+            return false, "Values must be non-empty strings or numbers."
+        end
     end
-    local current_size = log_file:seek('end')
-    if current_size >= log_file_max_size then
-        rotate_log_file()
+    return true, nil
+end
+
+local function processData(input)
+    local isValid, err = validateInput(input)
+    if not isValid then
+        error("Validation Error: " .. err)
     end
-    log_file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-    log_file:flush()
+    -- Process input data here
 end
 
-function Logger.info(message)
-    log('INFO: ' .. message)
-end
-
-function Logger.error(message)
-    log('ERROR: ' .. message)
-end
-
-function Logger.close()
-    if log_file then
-        log_file:close()
+local function mainLoop()
+    while true do
+        local userInput = getUserInput()  -- Assume this function retrieves user input
+        local isValid, err = validateInput(userInput)
+        if isValid then
+            processData(userInput)
+        else
+            print("Error: " .. err)
+        end
     end
 end
 
-return Logger
+mainLoop()

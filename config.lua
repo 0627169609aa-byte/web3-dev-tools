@@ -1,25 +1,42 @@
--- Configuration settings for the Web3 game
+-- Logger setup with rotation
+local Logger = {}
 
---- @class Config
---- @field rpcUrl string The RPC URL for the blockchain node
---- @field gameId string The unique identifier for the game
---- @field playerRewards table A table storing reward configurations for players
---- @field maxPlayers integer The maximum number of players in the game
-local Config = {}
+local log_file_path = 'app.log'
+local log_file_max_size = 10 * 1024 * 1024  -- 10 MB
+local log_file = nil
 
-Config.rpcUrl = "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
-Config.gameId = "game_123"
-Config.playerRewards = {
-    bronze = { amount = 100, currency = "ETH" },
-    silver = { amount = 250, currency = "ETH" },
-    gold = { amount = 500, currency = "ETH" }
-}
-Config.maxPlayers = 100
-
---- @return Config
-function Config:new()
-    local instance = setmetatable({}, { __index = self })
-    return instance
+local function rotate_log_file()
+    if log_file then
+        log_file:close()
+    end
+    os.rename(log_file_path, log_file_path .. os.date('%Y%m%d%H%M%S'))
+    log_file = io.open(log_file_path, 'a')
 end
 
-return Config
+local function log(message)
+    if not log_file then
+        log_file = io.open(log_file_path, 'a')
+    end
+    local current_size = log_file:seek('end')
+    if current_size >= log_file_max_size then
+        rotate_log_file()
+    end
+    log_file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+    log_file:flush()
+end
+
+function Logger.info(message)
+    log('INFO: ' .. message)
+end
+
+function Logger.error(message)
+    log('ERROR: ' .. message)
+end
+
+function Logger.close()
+    if log_file then
+        log_file:close()
+    end
+end
+
+return Logger

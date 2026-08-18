@@ -1,28 +1,33 @@
--- Helper functions for game interactions
+--[[
+  Performance optimizations for game actions
+]]
 
-local helpers = {}
+local M = {}
 
--- Function to generate a unique ID for a game entity
-function helpers.generateUniqueId()
-    return tostring(math.random(1000000000, 9999999999))
+-- Optimize event handling with a cached lookup table
+local eventCache = {}
+
+function M.registerEvent(eventName, callback)
+    if not eventCache[eventName] then
+        eventCache[eventName] = {}
+    end
+    table.insert(eventCache[eventName], callback)
 end
 
--- Function to check if a value is a valid player ID
-function helpers.isValidPlayerId(playerId)
-    return type(playerId) == 'string' and #playerId > 0
+function M.triggerEvent(eventName, ...)
+    if eventCache[eventName] then
+        for _, callback in ipairs(eventCache[eventName]) do
+            callback(...)  -- Call the registered callback with provided arguments
+        end
+    end
 end
 
--- Function to calculate the distance between two points
-function helpers.calculateDistance(x1, y1, x2, y2)
-    return math.sqrt((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+function M.clearEvents(eventName)
+    if eventName and eventCache[eventName] then
+        eventCache[eventName] = nil  -- Clear specific events for garbage collection
+    else
+        eventCache = {}  -- Clear all events if eventName is nil
+    end
 end
 
--- Function to format time in seconds to a readable string
-function helpers.formatTime(seconds)
-    local hours = math.floor(seconds / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
-    local remainingSeconds = seconds % 60
-    return string.format('%02d:%02d:%02d', hours, minutes, remainingSeconds)
-end
-
-return helpers
+return M

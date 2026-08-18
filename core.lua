@@ -1,41 +1,45 @@
--- Core functionalities for game transactions
+-- Logger setup for rotation
+local json = require('dkjson')
+local lfs = require('lfs')
 
-local function safeExecute(func)
-    local status, err = xpcall(func, debug.traceback)
-    if not status then
-        print("Error during execution: " .. err)
-        return false
+local Logger = {}
+Logger.filepath = 'logs/app.log'
+Logger.max_size = 1024 * 1024 * 5 -- 5 MB
+Logger.backup_count = 5
+
+-- Function to check if the log file needs rotation
+local function needs_rotation()  
+    local file_attr = lfs.attributes(Logger.filepath)
+    if file_attr and file_attr.size > Logger.max_size then
+        return true
     end
-    return true
+    return false
 end
 
-local function validateTransaction(transaction)
-    if not transaction.id or not transaction.amount then
-        error("Invalid transaction: Missing id or amount.")
+-- Function to rotate log files
+local function rotate_logs()
+    for i = Logger.backup_count, 1, -1 do
+        local old_file = Logger.filepath .. '.' .. i
+        local new_file = Logger.filepath .. '.' .. (i + 1)
+        if lfs.attributes(old_file) then
+            os.rename(old_file, new_file)
+        end
     end
-    if transaction.amount <= 0 then
-        error("Invalid transaction: Amount must be positive.")
-    end
+    os.rename(Logger.filepath, Logger.filepath .. '.1')
 end
 
-local function processTransaction(transaction)
-    safeExecute(function()
-        validateTransaction(transaction)
-        -- Simulate processing
-        print(string.format("Processing transaction %s for amount %.2f", transaction.id, transaction.amount))
-    end)
-end
-
-local function main()
-    local transactions = {
-        {id = 1, amount = 100},
-        {id = 2, amount = -50},  -- This will trigger an error
-        {id = 3}                 -- This will trigger an error
-    }
-
-    for _, transaction in ipairs(transactions) do
-        processTransaction(transaction)
+-- Function to log messages
+function Logger.log(message)
+    if needs_rotation() then
+        rotate_logs()
+    end
+    local log_file = io.open(Logger.filepath, 'a')
+    if log_file then
+        log_file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+        log_file:close()
+    else
+        error('Unable to open log file for writing.')
     end
 end
 
-main()
+return Logger

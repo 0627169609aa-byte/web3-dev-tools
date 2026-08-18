@@ -1,36 +1,41 @@
--- Function to perform a network operation with retry logic
-local function performNetworkOperation(url, maxRetries)
-    local attempts = 0
-    local success, response
+-- Core functionalities for game transactions
 
-    while attempts < maxRetries do
-        success, response = pcall(function()
-            return http.get(url) -- Replace with appropriate network call
-        end)
-
-        if success and response then
-            return response
-        else
-            attempts = attempts + 1
-            print("Attempt " .. attempts .. " failed. Retrying...")
-            os.execute("sleep 1") -- wait before retrying
-        end
+local function safeExecute(func)
+    local status, err = xpcall(func, debug.traceback)
+    if not status then
+        print("Error during execution: " .. err)
+        return false
     end
-
-    error("Failed to perform network operation after " .. maxRetries .. " attempts.")
+    return true
 end
 
--- Example usage
-local url = "https://api.gamingplatform.com/data"
-local maxRetries = 5
-local data
-
-local status, err = pcall(function()
-    data = performNetworkOperation(url, maxRetries)
-end)
-
-if not status then
-    print("Error: " .. err)
-else
-    print("Data retrieved successfully:", data)
+local function validateTransaction(transaction)
+    if not transaction.id or not transaction.amount then
+        error("Invalid transaction: Missing id or amount.")
+    end
+    if transaction.amount <= 0 then
+        error("Invalid transaction: Amount must be positive.")
+    end
 end
+
+local function processTransaction(transaction)
+    safeExecute(function()
+        validateTransaction(transaction)
+        -- Simulate processing
+        print(string.format("Processing transaction %s for amount %.2f", transaction.id, transaction.amount))
+    end)
+end
+
+local function main()
+    local transactions = {
+        {id = 1, amount = 100},
+        {id = 2, amount = -50},  -- This will trigger an error
+        {id = 3}                 -- This will trigger an error
+    }
+
+    for _, transaction in ipairs(transactions) do
+        processTransaction(transaction)
+    end
+end
+
+main()

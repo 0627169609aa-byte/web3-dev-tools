@@ -1,36 +1,35 @@
-local function validateInput(input)
-    if type(input) ~= "table" then
-        return false, "Input must be a table."
-    end
-    for key, value in pairs(input) do
-        if type(key) ~= "string" then
-            return false, "Keys must be strings."
-        end
-        if not value or (type(value) ~= "string" and type(value) ~= "number") then
-            return false, "Values must be non-empty strings or numbers."
-        end
-    end
-    return true, nil
+-- Logger setup with rotation
+
+local logger = require('logger')
+local path = require('path')
+local os = require('os')
+local lfs = require('lfs')
+
+local log_directory = 'logs'
+local max_size = 1024 * 1024 * 5  -- 5MB
+local log_file = path.join(log_directory, 'app.log')
+
+-- Ensure the log directory exists
+if not lfs.attributes(log_directory) then
+    lfs.mkdir(log_directory)
 end
 
-local function processData(input)
-    local isValid, err = validateInput(input)
-    if not isValid then
-        error("Validation Error: " .. err)
-    end
-    -- Process input data here
-end
-
-local function mainLoop()
-    while true do
-        local userInput = getUserInput()  -- Assume this function retrieves user input
-        local isValid, err = validateInput(userInput)
-        if isValid then
-            processData(userInput)
-        else
-            print("Error: " .. err)
+local function rotate_log()
+    if lfs.attributes(log_file) then
+        local current_size = lfs.attributes(log_file, 'size')
+        if current_size and current_size >= max_size then
+            local timestamp = os.date('%Y%m%d%H%M%S')
+            local archived_file = path.join(log_directory, 'app_' .. timestamp .. '.log')
+            os.rename(log_file, archived_file)
         end
     end
 end
 
-mainLoop()
+-- Setup the logger with rotation
+local function setup_logger()
+    rotate_log()
+    logger.open(log_file)
+    logger.set_level('info')  -- Set default log level
+end
+
+return { setup_logger = setup_logger }

@@ -1,54 +1,38 @@
--- Function to safely retrieve values from a table
-local function safeGet(table, key)
-    if table == nil then
-        error("Table cannot be nil")
-    end
-    if table[key] == nil then
-        return nil, "Key not found: " .. tostring(key)
-    end
-    return table[key], nil
+--[[
+  Helper functions for error handling in gaming context
+]]
+
+local helpers = {}
+
+-- Custom error class for more descriptive error handling
+local function CustomError(message)
+    local self = setmetatable({}, {__index = CustomError})
+    self.message = message or "An error occurred"
+    return self
 end
 
--- Function to validate player input
-local function validatePlayerInput(input)
-    if type(input) ~= "table" then
-        return nil, "Input must be a table"
-    end
-    if not input.name or not input.id then
-        return nil, "Missing required fields: name and id"
-    end
-    return true, nil
-end
-
--- Central function to handle player registration
-local function registerPlayer(players, playerData)
-    local valid, err = validatePlayerInput(playerData)
-    if not valid then
-        return nil, err
-    end
-    local _, err = safeGet(players, playerData.id)
-    if err then
-        players[playerData.id] = playerData
-        return playerData, nil
+function helpers.handleError(err)
+    if type(err) == "table" and err.message then
+        print("Error: " .. err.message)
     else
-        return nil, "Player already exists: " .. playerData.id
+        print("Error: " .. tostring(err))
     end
 end
 
--- Example usage
-local players = {}
-local playerData = {id = "001", name = "Alice"}
-local player, err = registerPlayer(players, playerData)
-if err then
-    print("Error registering player:", err)
-else
-    print("Player registered:", player.name)
+function helpers.safeExecute(func, ...)
+    local status, result = pcall(func, ...)
+    if not status then
+        helpers.handleError(CustomError(result))
+        return nil
+    end
+    return result
 end
 
-local playerDataDuplicate = {id = "001", name = "Bob"}
-local playerDup, errDup = registerPlayer(players, playerDataDuplicate)
-if errDup then
-    print("Error registering player:", errDup)
-else
-    print("Player registered:", playerDup.name)
+function helpers.validateInput(input)
+    if type(input) ~= "string" or input == "" then
+        error(CustomError("Invalid input: must be a non-empty string"))
+    end
+    return true
 end
+
+return helpers

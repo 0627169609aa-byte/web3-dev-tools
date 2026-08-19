@@ -1,33 +1,54 @@
---[[
-  Performance optimizations for game actions
-]]
-
-local M = {}
-
--- Optimize event handling with a cached lookup table
-local eventCache = {}
-
-function M.registerEvent(eventName, callback)
-    if not eventCache[eventName] then
-        eventCache[eventName] = {}
+-- Function to safely retrieve values from a table
+local function safeGet(table, key)
+    if table == nil then
+        error("Table cannot be nil")
     end
-    table.insert(eventCache[eventName], callback)
+    if table[key] == nil then
+        return nil, "Key not found: " .. tostring(key)
+    end
+    return table[key], nil
 end
 
-function M.triggerEvent(eventName, ...)
-    if eventCache[eventName] then
-        for _, callback in ipairs(eventCache[eventName]) do
-            callback(...)  -- Call the registered callback with provided arguments
-        end
+-- Function to validate player input
+local function validatePlayerInput(input)
+    if type(input) ~= "table" then
+        return nil, "Input must be a table"
     end
+    if not input.name or not input.id then
+        return nil, "Missing required fields: name and id"
+    end
+    return true, nil
 end
 
-function M.clearEvents(eventName)
-    if eventName and eventCache[eventName] then
-        eventCache[eventName] = nil  -- Clear specific events for garbage collection
+-- Central function to handle player registration
+local function registerPlayer(players, playerData)
+    local valid, err = validatePlayerInput(playerData)
+    if not valid then
+        return nil, err
+    end
+    local _, err = safeGet(players, playerData.id)
+    if err then
+        players[playerData.id] = playerData
+        return playerData, nil
     else
-        eventCache = {}  -- Clear all events if eventName is nil
+        return nil, "Player already exists: " .. playerData.id
     end
 end
 
-return M
+-- Example usage
+local players = {}
+local playerData = {id = "001", name = "Alice"}
+local player, err = registerPlayer(players, playerData)
+if err then
+    print("Error registering player:", err)
+else
+    print("Player registered:", player.name)
+end
+
+local playerDataDuplicate = {id = "001", name = "Bob"}
+local playerDup, errDup = registerPlayer(players, playerDataDuplicate)
+if errDup then
+    print("Error registering player:", errDup)
+else
+    print("Player registered:", playerDup.name)
+end
